@@ -1,6 +1,8 @@
 extends Node
 
-var mode = "live_input" # "from_replay"
+enum Mode {NO_INPUT, LIVE_INPUT, FROM_REPLAY}
+
+var current_mode = Mode.NO_INPUT
 
 var device_id:int = 0
 
@@ -40,11 +42,11 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	Utils.set_priority(self, "input")
 
-func change_mode(new_mode:String) -> void:
+func change_mode(new_mode:Mode) -> void:
 	#Debug.printf("Changing to mode: " + new_mode)
 	clear_this_frame()
 	clear_buffer_queue()
-	mode = new_mode
+	current_mode = new_mode
 
 func _physics_process(_delta:float) -> void:
 	if Input.is_action_just_pressed("ui_cancel"):
@@ -53,22 +55,22 @@ func _physics_process(_delta:float) -> void:
 		#Game.prepare_quit()
 		return
 	
-	if mode == "from_replay" and replay_index > replay.size()-1:
-		change_mode('no_input')
+	if current_mode == Mode.FROM_REPLAY and replay_index > replay.size()-1:
+		change_mode(Mode.NO_INPUT)
 		Debug.printf("End of Replay. size: " + str(replay.size()))
 		return
 	
-	if mode == "no_input":
+	if current_mode == Mode.NO_INPUT:
 		return
 	
 	# Store previous actions to detect just pressed:
 	var prev_actions:Array = this_frame.get('Act', []).duplicate()
 	
 	# Get this frame from live or replay:
-	match mode:
-		"live_input":  
+	match current_mode:
+		Mode.LIVE_INPUT:  
 			live_input()
-		"from_replay": 
+		Mode.FROM_REPLAY: 
 			from_replay()
 			replay_index += 1
 	
@@ -84,7 +86,7 @@ func _physics_process(_delta:float) -> void:
 			buffer_queue[action] = 1
 
 func init_recording() -> void:
-	if mode != 'live_input':
+	if current_mode != Mode.LIVE_INPUT:
 		return
 	replay = []
 
@@ -112,31 +114,34 @@ func decompress_replay(replay_info:Dictionary) -> Array:
 	return decompressed
 
 func stop_recording() -> void:
+	# give replays METADATA !!!!!!
+	
 	#Debug.printf(str(replay_data))
-	change_mode('no_input')
+	change_mode(Mode.NO_INPUT)
 	Debug.printf("Stopped recording. frames: " + str(replay.size()))
 	#ResourceSaver.save(replay, "user://replay.res")
 	
 	var compressed_replay:Dictionary = compress_replay(replay)
-	var decompressed_replay:Array = decompress_replay(compressed_replay)
 	
-	assert(decompressed_replay == replay)
+	if OS.has_feature('editor'):
+		var decompressed_replay:Array = decompress_replay(compressed_replay)
+		assert(decompressed_replay == replay)
 	
 	Network.here_is_a_replay(compressed_replay)
 
+# from Server.gd
 func prepare_replay_verification(passed_replay:Array) -> void:
-	mode = "no_input"
+	current_mode = Mode.NO_INPUT
 	replay = passed_replay
 	replay_index = 0
 	SceneManager.new_scene.connect(start_replay)
 
 func start_replay(_scene:String) -> void:
 	SceneManager.new_scene.disconnect(start_replay)
-	change_mode('from_replay')
+	change_mode(Mode.FROM_REPLAY)
 
 func strip_input_data(frame_of_input:Dictionary) -> Dictionary:
 	# Convert to recorded form (strip zero'd stuff)
-	# PackedByteArray might be interesting to look into...
 	var stripped = frame_of_input.duplicate(true)
 	if stripped['Act'].is_empty(): stripped.erase('Act')
 	stripped.erase('just_pressed')
@@ -185,9 +190,6 @@ func clean_stick(dir:Vector2) -> Vector2:
 	# minimum length of 0, maximum length of 1.
 	return dir.normalized() * new_length
 
-#func set_replay(passed_replay:Dictionary) -> void:
-	#replay = passed_replay
-	#replay_index = 0
 
 # EXTERNAL QUERY FUNCTIONS:
 

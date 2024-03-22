@@ -89,8 +89,7 @@ func username_is_valid(passed_username:String) -> bool:
 
 # Client -> Server calls:
 # These need to be validated very well to prevent any malicious input.
-@rpc('any_peer')
-func CtS_is_username_available(username) -> void:
+@rpc('any_peer') func CtS_is_username_available(username) -> void:
 	var id = multiplayer.get_remote_sender_id()
 	
 	# Validate types
@@ -130,14 +129,12 @@ func CtS_is_username_available(username) -> void:
 	
 	if db.secretkey_to_userid.has(secretkey):
 		# EXISTING USER
-		if peer_list.has(id):
-			Debug.printf("already logged in. pls fix")
-		else:
-			var userid:int = db.secretkey_to_userid[secretkey]
-			var username:String = db.userid_to_username[userid]
-			peer_list[id] = userid
-			Debug.printf("Successful login: " + username)
-			StC_successful_login.rpc_id(id, username)
+		#if peer_list.has(id): ???
+		var userid:int = db.secretkey_to_userid[secretkey]
+		var username:String = db.userid_to_username[userid]
+		peer_list[id] = userid
+		Debug.printf("Successful login: " + username)
+		StC_successful_login.rpc_id(id, username)
 	else:
 		# NEW USER
 		var userid:int = db.secretkey_to_userid.size()
@@ -150,11 +147,11 @@ func CtS_is_username_available(username) -> void:
 		Debug.printf("Successful login: " + username)
 		StC_successful_login.rpc_id(id, username)
 
-@rpc('any_peer')
-func CtS_request_seed() -> void:
+@rpc('any_peer') func CtS_request_seed() -> void:
 	var id = multiplayer.get_remote_sender_id()
 	var new_seed = randi()
 	
+	''' TODO: also assign this seed specificially to a userid '''
 	seed_time_pairs[new_seed] = Utils.get_unix_time()
 	Debug.printf("seed_time_pairs: " + str(seed_time_pairs))
 	
@@ -184,7 +181,7 @@ func CtS_request_seed() -> void:
 	Debug.printf("Got replay of size " + str(decompressed_replay.size()))
 	SInput.prepare_replay_verification(decompressed_replay)
 	SceneManager.change_scene('res://Levels/Corners.tscn')
-	
+
 @rpc ('any_peer') func CtS_request_leaderboard(level_name) -> void:
 	var id = multiplayer.get_remote_sender_id()
 	
@@ -206,11 +203,10 @@ func CtS_request_seed() -> void:
 #	pass
 
 # Server -> Client calls:
-# Godot 4.0's rpc system requires the same rpc function 
+# Godot's rpc system requires the same rpc function 
 # names be present both in the client and the server.
 # Implemented client-side only:
 @rpc func StC_disconnect(): pass # error_id:int
-#@rpc func StC_failed_login(): pass # error_id:int
 @rpc func StC_successful_login(): pass 
 @rpc func StC_username_availability(): pass # available:bool
 @rpc func StC_provide_seed(): pass

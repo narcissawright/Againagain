@@ -16,7 +16,7 @@ extends Node
 				ProjectSettings.set_setting("editor/run/main_run_args", "")
 				print("ProjectSettings: clear --headless")
 
-func _is_editor_server() -> void:
+func is_editor_server() -> void:
 	is_server = true
 
 func _ready() -> void:
@@ -25,7 +25,7 @@ func _ready() -> void:
 	
 	if OS.has_feature('editor'):
 		# The project running via the editor, check which instance.
-		Events.is_editor_server.connect(_is_editor_server)
+		Events.is_editor_server.connect(self.is_editor_server)
 		Network.get_node("InstanceChecker").check()
 	else:
 		Network.get_node("InstanceChecker").queue_free()
@@ -36,18 +36,18 @@ func _ready() -> void:
 		initiate_client_and_game()
 
 func initiate_server() -> void:
-	var MAX_SIMULATION_SPEED = 300
+	var MAX_SIMULATION_SPEED = 3
 	Engine.time_scale = MAX_SIMULATION_SPEED
 	Engine.physics_ticks_per_second *= MAX_SIMULATION_SPEED
 	Engine.max_physics_steps_per_frame *= MAX_SIMULATION_SPEED
-	SInput.mode = "no_input"
+	SInput.change_mode(SInput.Mode.NO_INPUT)
 	Network.set_script(load("res://Netcode/ServerExclusive/Server.gd"))
 	Network.start()
 
 func initiate_client_and_game() -> void:
+	SInput.change_mode(SInput.Mode.LIVE_INPUT)
 	Network.set_script(load("res://Netcode/ClientExclusive/Client.gd"))
 	Network.start()
-	#InputHandler.start()
 	call_deferred('go_to_main_menu')
 
 func go_to_main_menu() -> void:

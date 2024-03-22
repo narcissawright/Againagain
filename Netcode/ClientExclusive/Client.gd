@@ -43,12 +43,6 @@ func start() -> void:
 	Debug.printf("Starting Client.")
 	set_process_mode(Node.PROCESS_MODE_ALWAYS)
 	
-	# get username from file, if exists
-	#if FileAccess.file_exists(SECRETKEY_PATH):
-		#var file = FileAccess.open(SECRETKEY_PATH, FileAccess.READ)
-		#username = file.get_line()
-		#file.close()
-	
 	# connect multiplayer signals
 	multiplayer.connected_to_server.connect(self._connected_to_server)
 	multiplayer.connection_failed.connect(self._connection_failed)
@@ -91,17 +85,6 @@ func _server_disconnected() -> void:
 func get_connection_status() -> int:
 	return peer.get_connection_status()
 
-#func provide_credentials() -> void:
-	#if get_connection_status() == CONNECTED:
-		#var file = FileAccess.open(SECRETKEY_PATH, FileAccess.READ)
-		#username = file.get_line()
-		#var secretkey:String = file.get_line().sha256_text()
-		#file.close()
-		#CtS_provide_credentials.rpc_id(1, CLIENT_VERSION, username, secretkey)
-		#secretkey = ''
-	#else:
-		#print ("not connected - cannot provide_credentials()")
-#
 #func username_is_valid(passed_username:String) -> bool:
 	#passed_username = passed_username.to_lower()
 	#if passed_username.length() < USERNAME_LENGTH_MIN: return false 
@@ -116,24 +99,6 @@ func get_connection_status() -> int:
 	#
 #func is_username_available(passed_username:String) -> void:
 	#CtS_is_username_available.rpc_id(1, passed_username)
-
-#func create_user(passed_username:String):
-	## Validate name
-	#if not username_is_valid(passed_username):
-		#return
-	#
-	## Create secretkey
-	#username = passed_username.to_lower()
-	#var secretkey:String = Crypto.new().generate_random_bytes(32).hex_encode()
-	#
-	## Write user key file
-	#var file = FileAccess.open(SECRETKEY_PATH, FileAccess.WRITE)
-	#file.store_line(username)
-	#file.store_line(secretkey)
-	#file.close()
-	#
-	#emit_signal('key_created')
-	#provide_credentials()
 
 func create_key():
 	Debug.printf("Creating secret key")
@@ -164,24 +129,13 @@ func here_is_a_replay(compressed_replay:Dictionary) -> void:
 func request_leaderboard(level_name:String) -> void:
 	CtS_request_leaderboard.rpc_id(1, level_name)
 
+
 @rpc func StC_disconnect(error_code:int) -> void:
 	peer.close()
 	emit_signal('error', error_code)
 	if error_code == Error.VERSION_MISMATCH:
 		version_mismatch = true
 		Debug.printf("Version mismatch!")
-
-#@rpc func StC_failed_login(error_code:int) -> void:
-	#if FileAccess.file_exists(SECRETKEY_PATH):
-		#var new_file_path = "user://" + username + ".failkey"
-		#DirAccess.rename_absolute(SECRETKEY_PATH, new_file_path)
-		#if error_code == Error.SECRETKEY_MISMATCH:
-			#Debug.printf("Bad secretkey.")
-		#elif error_code == Error.USERNAME_RESERVED:
-			#Debug.printf("Reserved username: " + username)
-		#Debug.printf("- Renamed " + SECRETKEY_PATH + " -> " + new_file_path + ".")
-		#username = ''
-	#emit_signal("failed_login")
 
 @rpc func StC_successful_login(passed_username:String) -> void:
 	username = passed_username
@@ -203,7 +157,6 @@ func request_leaderboard(level_name:String) -> void:
 
 # Defined on server side only.
 @rpc func CtS_is_username_available() -> void: pass
-#@rpc func CtS_provide_credentials() -> void: pass
 @rpc func CtS_login() -> void: pass
 @rpc func CtS_request_seed() -> void: pass
 @rpc func CtS_validate_replay() -> void: pass

@@ -7,13 +7,13 @@ func _ready() -> void:
 	init_time_attack()
 
 func init_time_attack() -> void:
-	if SInput.mode == "live_input":
+	if SInput.current_mode == SInput.Mode.LIVE_INPUT:
 		SInput.init_recording()
 	#Debug.printf("Ready: " + str(get_tree().get_frame()))
 
 func _physics_process(_delta:float) -> void:
 	#Debug.printf("PhysicsProcess: " + str(get_tree().get_frame()))
-	if SInput.mode == "live_input":
+	if SInput.current_mode == SInput.Mode.LIVE_INPUT:
 		SInput.record_frame()
 	#if SInput.mode == "from_replay":
 		#var replay_pos = SInput.debug_positions[frame_count]
@@ -34,11 +34,11 @@ func human_readable_time(frames:int) -> String:
 
 func goal() -> void:
 	set_physics_process(false)
-	if SInput.mode == "live_input":
+	if SInput.current_mode == SInput.Mode.LIVE_INPUT:
 		SInput.stop_recording()
 	
 	Debug.printf(human_readable_time(frame_count) + " - " + str(frame_count) + " Frames")
 	Debug.printf(str(Utils.get_player().global_position))
 	
 	# reload scene
-	SceneManager.change_scene('res://Levels/Corners.tscn')
+	#SceneManager.change_scene('res://MainMenu.tscn')
