@@ -74,7 +74,8 @@ func _connected_to_server() -> void:
 	if FileAccess.file_exists(SECRETKEY_PATH):
 		login()
 	else:
-		create_user_anon()
+		create_key()
+		login()
 	
 func _connection_failed() -> void:
 	Debug.printf("Connection failed.")
@@ -134,18 +135,17 @@ func get_connection_status() -> int:
 	#emit_signal('key_created')
 	#provide_credentials()
 
-func create_user_anon():
-	Debug.printf("create_user_anon")
+func create_key():
+	Debug.printf("Creating secret key")
 	var secretkey:String = Crypto.new().generate_random_bytes(32).hex_encode()
 	# Write user key file
 	var file = FileAccess.open(SECRETKEY_PATH, FileAccess.WRITE)
 	file.store_line(secretkey)
 	file.close()
 	emit_signal('key_created')
-	login()
 
 func login() -> void:
-	Debug.printf("login")
+	Debug.printf("Login")
 	if get_connection_status() == CONNECTED:
 		var file = FileAccess.open(SECRETKEY_PATH, FileAccess.READ)
 		var secretkey:String = file.get_line().sha256_text()
@@ -171,20 +171,21 @@ func request_leaderboard(level_name:String) -> void:
 		version_mismatch = true
 		Debug.printf("Version mismatch!")
 
-@rpc func StC_failed_login(error_code:int) -> void:
-	if FileAccess.file_exists(SECRETKEY_PATH):
-		var new_file_path = "user://" + username + ".failkey"
-		DirAccess.rename_absolute(SECRETKEY_PATH, new_file_path)
-		if error_code == Error.SECRETKEY_MISMATCH:
-			Debug.printf("Bad secretkey.")
-		elif error_code == Error.USERNAME_RESERVED:
-			Debug.printf("Reserved username: " + username)
-		Debug.printf("- Renamed " + SECRETKEY_PATH + " -> " + new_file_path + ".")
-		username = ''
-	emit_signal("failed_login")
+#@rpc func StC_failed_login(error_code:int) -> void:
+	#if FileAccess.file_exists(SECRETKEY_PATH):
+		#var new_file_path = "user://" + username + ".failkey"
+		#DirAccess.rename_absolute(SECRETKEY_PATH, new_file_path)
+		#if error_code == Error.SECRETKEY_MISMATCH:
+			#Debug.printf("Bad secretkey.")
+		#elif error_code == Error.USERNAME_RESERVED:
+			#Debug.printf("Reserved username: " + username)
+		#Debug.printf("- Renamed " + SECRETKEY_PATH + " -> " + new_file_path + ".")
+		#username = ''
+	#emit_signal("failed_login")
 
-@rpc func StC_successful_login() -> void:
-	Debug.printf("Successful login.")
+@rpc func StC_successful_login(passed_username:String) -> void:
+	username = passed_username
+	Debug.printf("Successful login as " + username)
 	logged_in = true
 	emit_signal('successful_login')
 

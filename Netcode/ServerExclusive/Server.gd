@@ -44,6 +44,7 @@ func save_db() -> void:
 	else:
 		Debug.printf("Database did not save!!")
 		Debug.printf(str(err))
+	# maybe some way to save a database backup
 
 func start() -> void:
 	#print(Utils.get_unix_time())
@@ -68,7 +69,8 @@ func peer_connected(peer_id:int) -> void:
 	
 func peer_disconnected(peer_id:int) -> void:
 	if peer_list.has(peer_id):
-		Debug.printf(peer_list[peer_id].username + " disconnected.")
+		var username = db.userid_to_username[peer_list[peer_id]]
+		Debug.printf(username + " disconnected.")
 		peer_list.erase(peer_id)
 	else:
 		Debug.printf("Peer#" + str(peer_id) + " disconnected.")
@@ -106,59 +108,6 @@ func CtS_is_username_available(username) -> void:
 		return
 	StC_username_availability.rpc_id(id, true, username)
 
-#@rpc('any_peer')
-#func CtS_provide_credentials(client_version, username, secretkey) -> void:
-	#var id = multiplayer.get_remote_sender_id()
-	#
-	## Validate types
-	#if typeof(client_version) != TYPE_STRING: 
-		#StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
-		#return
-	#if typeof(username) != TYPE_STRING:
-		#StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
-		#return
-	#if typeof(secretkey) != TYPE_STRING:
-		#StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
-		#return
-	#
-	## Validate username
-	#username = username.to_lower()
-	#if not username_is_valid(username):
-		#StC_failed_login.rpc_id(id, Error.USERNAME_INVALID)
-		#return
-	#
-	## Check if client game version matches server version.
-	#if client_version != version:
-		#StC_disconnect.rpc_id(id, Error.VERSION_MISMATCH)
-		#Debug.printf(username + " wrong game version!")
-		#return
-	#
-	#secretkey = secretkey.sha256_text() # one more sha just 'cause
-	
-	# Check if username exists in database
-	#if userdata.username_and_key.has(username):
-		#if userdata.username_and_key[username] != secretkey:
-			#StC_failed_login.rpc_id(id, Error.SECRETKEY_MISMATCH)
-			#Debug.printf(username + " key mismatch.")
-		#else:
-			#if peer_list.has(id):
-				## note: is not checking for the same username logged in twice...
-				#Debug.printf(username + " already logged in. pls fix")
-			#else:
-				#Debug.printf(username + " successful login.")
-				#peer_list[id] = {"username" : username}
-				#StC_successful_login.rpc_id(id)
-	#else: # Creating new user.
-		#if Reserved.names.has(username):
-			#Debug.printf("Reserved name: " + username)
-			#StC_failed_login.rpc_id(id, Error.USERNAME_RESERVED)
-			#return
-		#peer_list[id] = {"username" : username}
-		#userdata.username_and_key[username] = secretkey
-		#ResourceSaver.save(db, db_path)
-		#Debug.printf(username + " new user successful login.")
-		#StC_successful_login.rpc_id(id)
-
 @rpc('any_peer') func CtS_login(client_version, secretkey) -> void:
 	var id = multiplayer.get_remote_sender_id()
 	
@@ -187,18 +136,19 @@ func CtS_is_username_available(username) -> void:
 			var userid:int = db.secretkey_to_userid[secretkey]
 			var username:String = db.userid_to_username[userid]
 			peer_list[id] = userid
-			Debug.printf(username + " successful login.")
-			StC_successful_login.rpc_id(id)
+			Debug.printf("Successful login: " + username)
+			StC_successful_login.rpc_id(id, username)
 	else:
 		# NEW USER
 		var userid:int = db.secretkey_to_userid.size()
-		var username:String = "Anon" + str(userid)
+		var username:String = "anon" + str(userid)
 		db.secretkey_to_userid[secretkey] = db.secretkey_to_userid.size()
 		db.userid_to_username[userid] = username
+		Debug.printf("New user created: " + username)
 		save_db()
 		peer_list[id] = userid
-		Debug.printf(username + " new user successful login.")
-		StC_successful_login.rpc_id(id)
+		Debug.printf("Successful login: " + username)
+		StC_successful_login.rpc_id(id, username)
 
 @rpc('any_peer')
 func CtS_request_seed() -> void:
@@ -260,7 +210,7 @@ func CtS_request_seed() -> void:
 # names be present both in the client and the server.
 # Implemented client-side only:
 @rpc func StC_disconnect(): pass # error_id:int
-@rpc func StC_failed_login(): pass # error_id:int
+#@rpc func StC_failed_login(): pass # error_id:int
 @rpc func StC_successful_login(): pass 
 @rpc func StC_username_availability(): pass # available:bool
 @rpc func StC_provide_seed(): pass
