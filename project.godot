@@ -1,0 +1,89 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Againagain"
+run/main_scene="res://Init.tscn"
+config/features=PackedStringArray("4.2", "Forward Plus")
+boot_splash/bg_color=Color(0.0862745, 0.0862745, 0.113725, 1)
+boot_splash/show_image=false
+config/icon="res://Icon.svg"
+
+[autoload]
+
+Debug="*res://Global/Debug.gd"
+Events="*res://Global/Events.gd"
+Network="*res://Global/Network.tscn"
+SceneManager="*res://Global/SceneManager.tscn"
+SInput="*res://Global/SInput.tscn"
+Utils="*res://Global/Utils.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=4
+
+[file_customization]
+
+folder_colors={
+"res://Actor/": "orange",
+"res://Global/": "green",
+"res://Global/unused/": "gray",
+"res://Levels/": "purple",
+"res://Netcode/": "gray",
+"res://Player/": "red",
+"res://Visual/": "blue"
+}
+
+[filesystem]
+
+import/blender/enabled=false
+
+[importer_defaults]
+
+scene={
+"meshes/generate_lods": false
+}
+
+[input]
+
+jump={
+"deadzone": 0.5,
+"events": [Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":0,"pressure":0.0,"pressed":false,"script":null)
+]
+}
+camera_realign={
+"deadzone": 0.5,
+"events": [Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":8,"pressure":0.0,"pressed":false,"script":null)
+]
+}
+start={
+"deadzone": 0.5,
+"events": [Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":6,"pressure":0.0,"pressed":false,"script":null)
+]
+}
+
+[layer_names]
+
+3d_physics/layer_1="Solid"
+3d_physics/layer_2="Player"
+3d_physics/layer_3="Actor"
+3d_physics/layer_4="InvisWall"
+
+[physics]
+
+3d/physics_engine="JoltPhysics3D"
+
+[rendering]
+
+environment/defaults/default_clear_color=Color(0.0862745, 0.0862745, 0.113725, 1)
+anti_aliasing/quality/screen_space_aa=1

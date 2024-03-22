@@ -1,0 +1,112 @@
+[gd_scene load_steps=14 format=3 uid="uid://dk38jg651xlcr"]
+
+[ext_resource type="Script" path="res://Visual/action_input_display/input_debug_label.gd" id="2_2ex6g"]
+[ext_resource type="Script" path="res://Visual/action_input_display/analog_stick.gd" id="3_xpnkw"]
+[ext_resource type="Texture2D" uid="uid://dvno5cx3r6vlx" path="res://Visual/action_input_display/analog_bounds.png" id="4_8jc0t"]
+[ext_resource type="Texture2D" uid="uid://rjm8883rgt2s" path="res://Visual/action_input_display/analog_pos.png" id="5_lrhtn"]
+[ext_resource type="Script" path="res://Visual/action_input_display/mouse_display.gd" id="6_dm2xu"]
+[ext_resource type="Texture2D" uid="uid://dtltk5k8pidqx" path="res://Visual/action_input_display/mouse.png" id="7_foyvj"]
+[ext_resource type="Texture2D" uid="uid://dfijk3vrxq4eg" path="res://Visual/action_input_display/mouse_shadow.png" id="8_54vue"]
+[ext_resource type="Texture2D" uid="uid://dn0745bvqw5vx" path="res://Visual/action_input_display/d_shadow_filled.png" id="9_82f7m"]
+[ext_resource type="Script" path="res://Visual/action_input_display/d_pad_display.gd" id="10_67x8b"]
+[ext_resource type="Texture2D" uid="uid://w0hxv7b31geb" path="res://Visual/action_input_display/d_up.png" id="11_qntx4"]
+[ext_resource type="Texture2D" uid="uid://cde34oninvn3a" path="res://Visual/action_input_display/d_down.png" id="12_41u8h"]
+[ext_resource type="Texture2D" uid="uid://8kuwaiq23tru" path="res://Visual/action_input_display/d_left.png" id="13_ogfwy"]
+[ext_resource type="Texture2D" uid="uid://jwyvf06iyoba" path="res://Visual/action_input_display/d_right.png" id="14_cvejt"]
+
+[node name="action_input_display" type="Node2D"]
+z_index = 1
+
+[node name="input_debug_label" type="RichTextLabel" parent="."]
+offset_left = 32.0
+offset_top = 360.0
+offset_right = 1112.0
+offset_bottom = 400.0
+bbcode_enabled = true
+text = "[ \"jump\" ]"
+scroll_active = false
+autowrap_mode = 0
+script = ExtResource("2_2ex6g")
+
+[node name="analog_sticks" type="Node2D" parent="."]
+position = Vector2(0, 280)
+script = ExtResource("3_xpnkw")
+
+[node name="left_stick" type="Node2D" parent="analog_sticks"]
+position = Vector2(10, 10)
+
+[node name="shadow" type="Sprite2D" parent="analog_sticks/left_stick"]
+self_modulate = Color(0, 0, 0, 1)
+position = Vector2(1, 1)
+texture = ExtResource("4_8jc0t")
+centered = false
+
+[node name="left_bounds" type="Sprite2D" parent="analog_sticks/left_stick"]
+unique_name_in_owner = true
+self_modulate = Color(0.501961, 0.501961, 0.501961, 1)
+texture = ExtResource("4_8jc0t")
+centered = false
+
+[node name="left_pos" type="Sprite2D" parent="analog_sticks/left_stick/left_bounds"]
+unique_name_in_owner = true
+texture = ExtResource("5_lrhtn")
+offset = Vector2(32, 32)
+
+[node name="right_stick" type="Node2D" parent="analog_sticks"]
+position = Vector2(84, 10)
+
+[node name="shadow_2" type="Sprite2D" parent="analog_sticks/right_stick"]
+self_modulate = Color(0, 0, 0, 1)
+position = Vector2(1, 1)
+texture = ExtResource("4_8jc0t")
+centered = false
+
+[node name="right_bounds" type="Sprite2D" parent="analog_sticks/right_stick"]
+unique_name_in_owner = true
+self_modulate = Color(0.501961, 0.501961, 0.501961, 1)
+texture = ExtResource("4_8jc0t")
+centered = false
+
+[node name="right_pos" type="Sprite2D" parent="analog_sticks/right_stick/right_bounds"]
+unique_name_in_owner = true
+texture = ExtResource("5_lrhtn")
+offset = Vector2(32, 32)
+
+[node name="mouse" type="Node2D" parent="."]
+visible = false
+position = Vector2(84, 220)
+script = ExtResource("6_dm2xu")
+
+[node name="mouse_sprite" type="Sprite2D" parent="mouse"]
+texture = ExtResource("7_foyvj")
+centered = false
+
+[node name="mouse_shadow" type="Sprite2D" parent="mouse/mouse_sprite"]
+show_behind_parent = true
+texture = ExtResource("8_54vue")
+centered = false
+offset = Vector2(1, 1)
+
+[node name="d_pad" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(10, 220)
+texture = ExtResource("9_82f7m")
+centered = false
+offset = Vector2(1, 1)
+script = ExtResource("10_67x8b")
+
+[node name="move_up" type="Sprite2D" parent="d_pad"]
+texture = ExtResource("11_qntx4")
+centered = false
+
+[node name="move_down" type="Sprite2D" parent="d_pad"]
+texture = ExtResource("12_41u8h")
+centered = false
+
+[node name="move_left" type="Sprite2D" parent="d_pad"]
+texture = ExtResource("13_ogfwy")
+centered = false
+
+[node name="move_right" type="Sprite2D" parent="d_pad"]
+texture = ExtResource("14_cvejt")
+centered = false

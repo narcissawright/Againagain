@@ -1,0 +1,27 @@
+[gd_resource type="Environment" load_steps=5 format=3 uid="uid://qeibxwvvksfi"]
+
+[ext_resource type="Shader" path="res://Visual/Dreary.gdshader" id="1_ool56"]
+[ext_resource type="Texture2D" uid="uid://rxuvn8h03wni" path="res://Visual/alisha-bannister-sarno-alishabs-clouds.jpg" id="2_ik4hl"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s6iw0"]
+shader = ExtResource("1_ool56")
+shader_parameter/albedo_dark = Color(0.0862745, 0.0862745, 0.113725, 1)
+shader_parameter/albedo_bright = Color(0.815686, 0.815686, 0.980392, 1)
+shader_parameter/moon_pos = null
+shader_parameter/texture_albedo = ExtResource("2_ik4hl")
+
+[sub_resource type="Sky" id="Sky_t5kwv"]
+sky_material = SubResource("ShaderMaterial_s6iw0")
+process_mode = 3
+
+[resource]
+background_mode = 2
+sky = SubResource("Sky_t5kwv")
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_sky_contribution = 0.8
+ssao_enabled = true
+ssil_enabled = true
+fog_enabled = true
+fog_light_color = Color(0.0862745, 0.0862745, 0.113725, 1)
+fog_sky_affect = 0.0
+volumetric_fog_sky_affect = 0.0

@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://de53gyx3ik2jl"]
+
+[ext_resource type="Script" path="res://Player/GameCamera.gd" id="1_iuy3x"]
+
+[node name="GameCamera" type="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 4)
+script = ExtResource("1_iuy3x")
+
+[node name="Debug1" type="ColorRect" parent="."]
+offset_right = 4.0
+offset_bottom = 4.0
+
+[node name="Debug2" type="ColorRect" parent="."]
+offset_right = 4.0
+offset_bottom = 4.0

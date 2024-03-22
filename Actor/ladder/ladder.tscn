@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3 uid="uid://guv1gvysegwo"]
+
+[ext_resource type="Script" path="res://Actor/ladder/Ladder.gd" id="1_2q4fw"]
+[ext_resource type="PackedScene" uid="uid://7uca7u3tu8xj" path="res://Actor/ladder/ladder_loopable.glb" id="2_0jhdj"]
+[ext_resource type="PackedScene" uid="uid://c1nb5mfjn1hbv" path="res://Actor/ladder/ladder_top.glb" id="3_6flo7"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wlvvh"]
+size = Vector3(0.7, 1.13333, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w47jf"]
+size = Vector3(0.6, 1, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_eggs6"]
+size = Vector3(0.1, 0.283, 0.1)
+
+[node name="ladder" type="Node3D"]
+script = ExtResource("1_2q4fw")
+
+[node name="Area" type="Area3D" parent="."]
+collision_layer = 256
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.566667, 0)
+shape = SubResource("BoxShape3D_wlvvh")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_w47jf")
+
+[node name="top_piece_1" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 1.14167, 0)
+shape = SubResource("BoxShape3D_eggs6")
+
+[node name="top_piece_2" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.14167, 0)
+shape = SubResource("BoxShape3D_eggs6")
+
+[node name="pieces" type="Node3D" parent="."]
+
+[node name="ladder_loopable" parent="pieces" instance=ExtResource("2_0jhdj")]
+
+[node name="ladder_top" parent="pieces" instance=ExtResource("3_6flo7")]

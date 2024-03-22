@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4501kwcnwd66"]
+
+[ext_resource type="Script" path="res://Netcode/CheckInstance.gd" id="1_j538k"]
+
+[node name="Network" type="Node"]
+
+[node name="InstanceChecker" type="Node" parent="."]
+script = ExtResource("1_j538k")

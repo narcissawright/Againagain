@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://crj21u6hqif8n"]
+
+[ext_resource type="PackedScene" uid="uid://co8bcwps518uq" path="res://Player/Player.tscn" id="1_84ek6"]
+[ext_resource type="PackedScene" uid="uid://de53gyx3ik2jl" path="res://Player/GameCamera.tscn" id="2_dk2ui"]
+[ext_resource type="Material" uid="uid://bgk1kmv1eacga" path="res://Visual/checker.material" id="3_5yt6u"]
+[ext_resource type="Environment" uid="uid://qeibxwvvksfi" path="res://Visual/WorldEnvDreary.tres" id="4_165hx"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_f4tki"]
+material = ExtResource("3_5yt6u")
+size = Vector2(50, 50)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_drbai"]
+data = PackedVector3Array(25, -25, 0, -25, -25, 0, 25, 25, 0, -25, -25, 0, -25, 25, 0, 25, 25, 0)
+
+[node name="BasicScene" type="Node3D"]
+
+[node name="Actor" type="Node" parent="."]
+
+[node name="Player" parent="Actor" instance=ExtResource("1_84ek6")]
+
+[node name="GameCamera" parent="Actor" instance=ExtResource("2_dk2ui")]
+
+[node name="LvlGeometry" type="Node" parent="."]
+
+[node name="Floor" type="MeshInstance3D" parent="LvlGeometry"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("QuadMesh_f4tki")
+skeleton = NodePath("../..")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LvlGeometry/Floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LvlGeometry/Floor/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_drbai")
+
+[node name="EnvLighting" type="Node" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="EnvLighting"]
+environment = ExtResource("4_165hx")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="EnvLighting"]
+transform = Transform3D(0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, 0, 8, 0)
+shadow_enabled = true
+directional_shadow_blend_splits = true

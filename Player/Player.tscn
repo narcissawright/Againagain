@@ -1,0 +1,58 @@
+[gd_scene load_steps=12 format=3 uid="uid://co8bcwps518uq"]
+
+[ext_resource type="Script" path="res://Player/Player.gd" id="1_kya2c"]
+[ext_resource type="Script" path="res://Player/Ground.gd" id="2_67mtj"]
+[ext_resource type="Material" uid="uid://b8dtosv0sv86n" path="res://Visual/SimpleActor.material" id="2_o5qsg"]
+[ext_resource type="Script" path="res://Player/InitJump.gd" id="3_f34pq"]
+[ext_resource type="Shader" path="res://Player/XRaySilhouette.gdshader" id="3_jfqf2"]
+[ext_resource type="Script" path="res://Player/Air.gd" id="4_j2l6a"]
+[ext_resource type="Script" path="res://Player/Ledge.gd" id="5_agl60"]
+[ext_resource type="Script" path="res://Player/Ladder.gd" id="6_dyogt"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_i8yhj"]
+render_priority = 0
+next_pass = ExtResource("2_o5qsg")
+shader = ExtResource("3_jfqf2")
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_rak3o"]
+material = SubResource("ShaderMaterial_i8yhj")
+radius = 0.25
+height = 1.55
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_h6ve1"]
+radius = 0.25
+height = 1.55
+
+[node name="Player" type="CharacterBody3D" groups=["Player"]]
+collision_layer = 2
+script = ExtResource("1_kya2c")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.775, 0)
+instance_shader_parameters/my_color = Color(0.301961, 0.494118, 0.952941, 1)
+mesh = SubResource("CapsuleMesh_rak3o")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.775, 0)
+shape = SubResource("CapsuleShape3D_h6ve1")
+
+[node name="States" type="Node" parent="."]
+
+[node name="Ground" type="Node" parent="States"]
+script = ExtResource("2_67mtj")
+
+[node name="InitJump" type="Node" parent="States"]
+script = ExtResource("3_f34pq")
+
+[node name="Air" type="Node" parent="States"]
+script = ExtResource("4_j2l6a")
+
+[node name="Ledge" type="Node" parent="States"]
+unique_name_in_owner = true
+script = ExtResource("5_agl60")
+
+[node name="Ladder" type="Node" parent="States"]
+script = ExtResource("6_dyogt")
+
+[node name="CameraTarget" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)

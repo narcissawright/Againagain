@@ -1,0 +1,48 @@
+[gd_scene load_steps=4 format=3 uid="uid://1feqanj7tsr2"]
+
+[ext_resource type="Script" path="res://ui/action_input_display/analog_stick.gd" id="1_6pntq"]
+[ext_resource type="Texture2D" uid="uid://dvno5cx3r6vlx" path="res://ui/action_input_display/analog_bounds.png" id="1_1518g"]
+[ext_resource type="Texture2D" uid="uid://rjm8883rgt2s" path="res://ui/action_input_display/analog_pos.png" id="2_ilxma"]
+
+[node name="analog_stick" type="Node2D"]
+script = ExtResource("1_6pntq")
+
+[node name="left_stick" type="Node2D" parent="."]
+position = Vector2(10, 10)
+
+[node name="shadow" type="Sprite2D" parent="left_stick"]
+self_modulate = Color(0, 0, 0, 1)
+position = Vector2(1, 1)
+texture = ExtResource("1_1518g")
+centered = false
+
+[node name="left_bounds" type="Sprite2D" parent="left_stick"]
+unique_name_in_owner = true
+self_modulate = Color(0.501961, 0.501961, 0.501961, 1)
+texture = ExtResource("1_1518g")
+centered = false
+
+[node name="left_pos" type="Sprite2D" parent="left_stick/left_bounds"]
+unique_name_in_owner = true
+texture = ExtResource("2_ilxma")
+offset = Vector2(32, 32)
+
+[node name="right_stick" type="Node2D" parent="."]
+position = Vector2(84, 10)
+
+[node name="shadow_2" type="Sprite2D" parent="right_stick"]
+self_modulate = Color(0, 0, 0, 1)
+position = Vector2(1, 1)
+texture = ExtResource("1_1518g")
+centered = false
+
+[node name="right_bounds" type="Sprite2D" parent="right_stick"]
+unique_name_in_owner = true
+self_modulate = Color(0.501961, 0.501961, 0.501961, 1)
+texture = ExtResource("1_1518g")
+centered = false
+
+[node name="right_pos" type="Sprite2D" parent="right_stick/right_bounds"]
+unique_name_in_owner = true
+texture = ExtResource("2_ilxma")
+offset = Vector2(32, 32)
