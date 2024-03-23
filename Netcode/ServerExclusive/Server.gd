@@ -176,11 +176,17 @@ func username_is_valid(passed_username:String) -> bool:
 	if typeof(replay.packed_zstd) != TYPE_PACKED_BYTE_ARRAY:
 		StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
 		return
+	# TODO ... a lot more validation for additional dict entries
+	# TODO - final pos sync, level name, frame count, userid, rng_seed
 	
-	var decompressed_replay:Array = SInput.decompress_replay(replay)
-	Debug.printf("Got replay of size " + str(decompressed_replay.size()))
-	SInput.prepare_replay_verification(decompressed_replay)
-	SceneManager.change_scene('res://Levels/Corners.tscn')
+	# TODO - unix timestamp validation stuff.
+	# TODO - user name, attempt count, rank when set, date achieved, final time
+	# TODO - saving files.
+	
+	var r := Replay.new()
+	r.reconstruct_from_server_side(replay)
+	Debug.printf("Got replay of size " + str(r.inputs.size()))
+	SInput.prepare_replay_verification(r)
 
 @rpc ('any_peer') func CtS_request_leaderboard(level_name) -> void:
 	var id = multiplayer.get_remote_sender_id()

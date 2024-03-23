@@ -1,13 +1,13 @@
 [gd_scene load_steps=27 format=3 uid="uid://hghn60uc863w"]
 
-[ext_resource type="PackedScene" uid="uid://co8bcwps518uq" path="res://Player/Player.tscn" id="1_102yf"]
-[ext_resource type="PackedScene" uid="uid://de53gyx3ik2jl" path="res://Player/GameCamera.tscn" id="2_ee24e"]
-[ext_resource type="Script" path="res://Levels/Goal.gd" id="3_bapk4"]
-[ext_resource type="Material" uid="uid://bgk1kmv1eacga" path="res://Visual/checker.material" id="3_ej7kj"]
-[ext_resource type="Script" path="res://Actor/TimeAttack.gd" id="3_kh87b"]
-[ext_resource type="Environment" uid="uid://qeibxwvvksfi" path="res://Visual/WorldEnvDreary.tres" id="4_kxlcv"]
-[ext_resource type="PackedScene" uid="uid://guv1gvysegwo" path="res://Actor/ladder/ladder.tscn" id="5_jbnvx"]
-[ext_resource type="PackedScene" uid="uid://do8a5fbfxrskj" path="res://Actor/spring/spring.tscn" id="6_d8xhr"]
+[ext_resource type="PackedScene" uid="uid://co8bcwps518uq" path="res://Player/Player.tscn" id="1_g0jq5"]
+[ext_resource type="PackedScene" uid="uid://de53gyx3ik2jl" path="res://Player/GameCamera.tscn" id="2_q4jdx"]
+[ext_resource type="Script" path="res://Actor/TimeAttack.gd" id="3_fvy7i"]
+[ext_resource type="Script" path="res://Scenes/Corners/Goal.gd" id="4_27go1"]
+[ext_resource type="PackedScene" uid="uid://guv1gvysegwo" path="res://Actor/ladder/ladder.tscn" id="5_0qf0q"]
+[ext_resource type="PackedScene" uid="uid://do8a5fbfxrskj" path="res://Actor/spring/spring.tscn" id="6_u0jcx"]
+[ext_resource type="Material" uid="uid://bgk1kmv1eacga" path="res://Visual/checker.material" id="7_vtm1u"]
+[ext_resource type="Environment" uid="uid://qeibxwvvksfi" path="res://Visual/WorldEnvDreary.tres" id="8_hcdt7"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_j31pj"]
 size = Vector3(16, 16, 8)
@@ -20,7 +20,7 @@ material = SubResource("StandardMaterial3D_htkds")
 size = Vector2(16, 8)
 
 [sub_resource type="QuadMesh" id="QuadMesh_f4tki"]
-material = ExtResource("3_ej7kj")
+material = ExtResource("7_vtm1u")
 size = Vector2(50, 50)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_drbai"]
@@ -71,19 +71,19 @@ data = PackedVector3Array(-1.5, 1.1625, 1.5, 1.5, 1.1625, 1.5, -1.5, -1.1625, 1.
 
 [node name="Actor" type="Node" parent="."]
 
-[node name="Player" parent="Actor" instance=ExtResource("1_102yf")]
+[node name="Player" parent="Actor" instance=ExtResource("1_g0jq5")]
 
-[node name="Camera3D" parent="Actor" instance=ExtResource("2_ee24e")]
+[node name="Camera3D" parent="Actor" instance=ExtResource("2_q4jdx")]
 
 [node name="TimeAttack" type="Node" parent="Actor"]
 process_priority = 2
 process_physics_priority = 2
-script = ExtResource("3_kh87b")
+script = ExtResource("3_fvy7i")
 
 [node name="Goal" type="Area3D" parent="Actor"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 4)
 collision_mask = 2
-script = ExtResource("3_bapk4")
+script = ExtResource("4_27go1")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Actor/Goal"]
 shape = SubResource("BoxShape3D_j31pj")
@@ -93,14 +93,14 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.0
 mesh = SubResource("QuadMesh_72gsi")
 skeleton = NodePath("../../../LvlGeometry")
 
-[node name="ladder" parent="Actor" instance=ExtResource("5_jbnvx")]
+[node name="ladder" parent="Actor" instance=ExtResource("5_0qf0q")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 8, 0, 0)
 height = 8
 
-[node name="Spring" parent="Actor" instance=ExtResource("6_d8xhr")]
+[node name="Spring" parent="Actor" instance=ExtResource("6_u0jcx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -5)
 
-[node name="Spring2" parent="Actor" instance=ExtResource("6_d8xhr")]
+[node name="Spring2" parent="Actor" instance=ExtResource("6_u0jcx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -9)
 velocity = 20.0
 
@@ -182,7 +182,7 @@ shape = SubResource("ConcavePolygonShape3D_jh5cp")
 [node name="EnvLighting" type="Node" parent="."]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="EnvLighting"]
-environment = ExtResource("4_kxlcv")
+environment = ExtResource("8_hcdt7")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="EnvLighting"]
 transform = Transform3D(-0.965926, 0.183013, -0.183013, -1.77636e-15, 0.707107, 0.707107, 0.258819, 0.683013, -0.683013, 0, 8, 0)

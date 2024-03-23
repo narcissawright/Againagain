@@ -51,5 +51,4 @@ func initiate_client_and_game() -> void:
 	call_deferred('go_to_main_menu')
 
 func go_to_main_menu() -> void:
-	SceneManager.insta_change_scene('res://MainMenu.tscn')
-	#get_tree().change_scene_to_file('res://MainMenu.tscn')
+	SceneManager.insta_change_scene('MainMenu')

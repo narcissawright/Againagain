@@ -38,9 +38,9 @@ folder_colors={
 "res://Actor/": "orange",
 "res://Global/": "green",
 "res://Global/unused/": "gray",
-"res://Levels/": "purple",
 "res://Netcode/": "gray",
 "res://Player/": "red",
+"res://Scenes/": "purple",
 "res://Visual/": "blue"
 }
 

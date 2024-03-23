@@ -1,18 +1,15 @@
 extends Node
 
 enum Mode {NO_INPUT, LIVE_INPUT, FROM_REPLAY}
-
 var current_mode = Mode.NO_INPUT
+var r:Replay
 
 var device_id:int = 0
-
 var action_list:Array[StringName]
+
 var this_frame:Dictionary
 var buffer_queue:Dictionary
 const MAX_BUFFER_TIME:int = 8 # frames
-
-var replay:Array
-var replay_index:int = 0 # Which frame?
 
 func _init() -> void:
 	# Set action list. Filter out the built-in ui actions.
@@ -55,9 +52,9 @@ func _physics_process(_delta:float) -> void:
 		#Game.prepare_quit()
 		return
 	
-	if current_mode == Mode.FROM_REPLAY and replay_index > replay.size()-1:
+	if current_mode == Mode.FROM_REPLAY and r.index > r.inputs.size()-1:
 		change_mode(Mode.NO_INPUT)
-		Debug.printf("End of Replay. size: " + str(replay.size()))
+		Debug.printf("End of Replay. size: " + str(r.inputs.size()))
 		return
 	
 	if current_mode == Mode.NO_INPUT:
@@ -72,7 +69,7 @@ func _physics_process(_delta:float) -> void:
 			live_input()
 		Mode.FROM_REPLAY: 
 			from_replay()
-			replay_index += 1
+			r.index += 1
 	
 	# Analyze (buffer, just pressed)
 	for action in buffer_queue:
@@ -85,71 +82,43 @@ func _physics_process(_delta:float) -> void:
 			this_frame['just_pressed'].append(action)
 			buffer_queue[action] = 1
 
-func init_recording() -> void:
-	if current_mode != Mode.LIVE_INPUT:
-		return
-	replay = []
 
-#var debug_positions = []
-func record_frame() -> void: # from external call?
-	var stripped_input = strip_input_data(this_frame)
-	replay.append(stripped_input)
-	
-	# remove this later:
-	#debug_positions.append(Utils.get_player().global_position)
+func init_recording() -> void: 
+	# more metadata?
+	r = Replay.new()
 
-func compress_replay(data:Array) -> Dictionary:
-	var packed:PackedByteArray = var_to_bytes(data)
-	var packed_ZSTD:PackedByteArray = packed.compress(FileAccess.COMPRESSION_ZSTD)
-	var compressed_replay := {
-		'buffer_size': packed.size(),
-		'packed_zstd': packed_ZSTD
-	}
-	Debug.printf ("Packed replay. " + str(compressed_replay.buffer_size) + " B -> " + str(packed_ZSTD.size()) + " B.")
-	return compressed_replay
-
-func decompress_replay(replay_info:Dictionary) -> Array:
-	var packed:PackedByteArray = replay_info.packed_zstd.decompress(replay_info.buffer_size, FileAccess.COMPRESSION_ZSTD)
-	var decompressed:Array = bytes_to_var(packed)
-	return decompressed
+func record_frame() -> void: 
+	r.record_frame(this_frame)
 
 func stop_recording() -> void:
-	# give replays METADATA !!!!!!
-	
-	#Debug.printf(str(replay_data))
 	change_mode(Mode.NO_INPUT)
-	Debug.printf("Stopped recording. frames: " + str(replay.size()))
-	#ResourceSaver.save(replay, "user://replay.res")
-	
-	var compressed_replay:Dictionary = compress_replay(replay)
-	
-	if OS.has_feature('editor'):
-		var decompressed_replay:Array = decompress_replay(compressed_replay)
-		assert(decompressed_replay == replay)
-	
-	Network.here_is_a_replay(compressed_replay)
+	Debug.printf("Stopped recording. frames: " + str(r.inputs.size()))
+	r.compress()
+	var replay_data:Dictionary = r.get_client_to_server_replay_data()
+	Network.here_is_a_replay(replay_data)
 
 # from Server.gd
-func prepare_replay_verification(passed_replay:Array) -> void:
+func prepare_replay_verification(passed_replay:Replay) -> void:
 	current_mode = Mode.NO_INPUT
-	replay = passed_replay
-	replay_index = 0
+	r = passed_replay
+	r.index = 0
 	SceneManager.new_scene.connect(start_replay)
+	SceneManager.change_scene('Corners')
 
 func start_replay(_scene:String) -> void:
 	SceneManager.new_scene.disconnect(start_replay)
 	change_mode(Mode.FROM_REPLAY)
 
-func strip_input_data(frame_of_input:Dictionary) -> Dictionary:
-	# Convert to recorded form (strip zero'd stuff)
-	var stripped = frame_of_input.duplicate(true)
-	if stripped['Act'].is_empty(): stripped.erase('Act')
-	stripped.erase('just_pressed')
-	if stripped['LS'].is_zero_approx(): stripped.erase('LS')
-	if stripped['RS'].is_zero_approx(): stripped.erase('RS')
-	if is_zero_approx(stripped['L2']): stripped.erase('L2')
-	if is_zero_approx(stripped['R2']): stripped.erase('R2')
-	return stripped
+func clean_stick(dir:Vector2) -> Vector2:
+	# numbers may need adjustment based on what controller the player is using.
+	var deadzone = 0.05  # minimum stick input needed to trigger a reaction
+	var maxzone = 1.0    # maximum stick input (cannot go higher)
+	
+	var raw_length:float = dir.length()
+	var new_length:float = inverse_lerp(deadzone, maxzone, raw_length)
+	new_length = clamp(new_length, 0.0, 1.0)
+	# minimum length of 0, maximum length of 1.
+	return dir.normalized() * new_length
 
 func live_input() -> void:
 	# Boolean button actions
@@ -168,28 +137,27 @@ func live_input() -> void:
 	# Analog Shoulders
 	this_frame['L2'] = Input.get_joy_axis(device_id, JOY_AXIS_TRIGGER_LEFT)
 	this_frame['R2'] = Input.get_joy_axis(device_id, JOY_AXIS_TRIGGER_RIGHT)
-	
+
 func from_replay() -> void:
 	# Boolean button actions.
-	this_frame['Act'] = replay[replay_index].get("Act", []).duplicate()
+	this_frame['Act'] = r.inputs[r.index].get("Act", []).duplicate()
 	# Joysticks
-	this_frame['LS'] = replay[replay_index].get('LS', Vector2.ZERO)
-	this_frame['RS'] = replay[replay_index].get('RS', Vector2.ZERO)
+	this_frame['LS'] = r.inputs[r.index].get('LS', Vector2.ZERO)
+	this_frame['RS'] = r.inputs[r.index].get('RS', Vector2.ZERO)
 	# Analog Shoulder
-	this_frame['L2'] = replay[replay_index].get('L2', 0.0)
-	this_frame['R2'] = replay[replay_index].get('R2', 0.0)
-	
-func clean_stick(dir:Vector2) -> Vector2:
-	# numbers may need adjustment based on what controller the player is using.
-	var deadzone = 0.05  # minimum stick input needed to trigger a reaction
-	var maxzone = 1.0    # maximum stick input (cannot go higher)
-	
-	var raw_length:float = dir.length()
-	var new_length:float = inverse_lerp(deadzone, maxzone, raw_length)
-	new_length = clamp(new_length, 0.0, 1.0)
-	# minimum length of 0, maximum length of 1.
-	return dir.normalized() * new_length
+	this_frame['L2'] = r.inputs[r.index].get('L2', 0.0)
+	this_frame['R2'] = r.inputs[r.index].get('R2', 0.0)
 
+func strip_input_data(frame_of_input:Dictionary) -> Dictionary:
+	# Convert to recorded form (strip zero'd stuff)
+	var stripped = frame_of_input.duplicate(true)
+	if stripped['Act'].is_empty(): stripped.erase('Act')
+	stripped.erase('just_pressed')
+	if stripped['LS'].is_zero_approx(): stripped.erase('LS')
+	if stripped['RS'].is_zero_approx(): stripped.erase('RS')
+	if is_zero_approx(stripped['L2']): stripped.erase('L2')
+	if is_zero_approx(stripped['R2']): stripped.erase('R2')
+	return stripped
 
 # EXTERNAL QUERY FUNCTIONS:
 

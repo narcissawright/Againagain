@@ -1,19 +1,19 @@
 [gd_scene load_steps=34 format=3 uid="uid://duw8w2b8ees8n"]
 
-[ext_resource type="PackedScene" uid="uid://de53gyx3ik2jl" path="res://Player/GameCamera.tscn" id="1_1qh0f"]
-[ext_resource type="PackedScene" uid="uid://co8bcwps518uq" path="res://Player/Player.tscn" id="2_uojfs"]
-[ext_resource type="Material" uid="uid://b8dtosv0sv86n" path="res://Visual/SimpleActor.material" id="3_qxa6c"]
-[ext_resource type="PackedScene" uid="uid://guv1gvysegwo" path="res://Actor/ladder/ladder.tscn" id="4_dfjgo"]
-[ext_resource type="PackedScene" uid="uid://do8a5fbfxrskj" path="res://Actor/spring/spring.tscn" id="5_nhulr"]
-[ext_resource type="Material" uid="uid://bgk1kmv1eacga" path="res://Visual/checker.material" id="6_kdc7o"]
-[ext_resource type="Environment" uid="uid://qeibxwvvksfi" path="res://Visual/WorldEnvDreary.tres" id="7_pkkqi"]
+[ext_resource type="PackedScene" uid="uid://de53gyx3ik2jl" path="res://Player/GameCamera.tscn" id="1_gut8b"]
+[ext_resource type="PackedScene" uid="uid://co8bcwps518uq" path="res://Player/Player.tscn" id="2_7q43h"]
+[ext_resource type="Material" uid="uid://b8dtosv0sv86n" path="res://Visual/SimpleActor.material" id="3_4kwlj"]
+[ext_resource type="PackedScene" uid="uid://guv1gvysegwo" path="res://Actor/ladder/ladder.tscn" id="4_qb2ss"]
+[ext_resource type="PackedScene" uid="uid://do8a5fbfxrskj" path="res://Actor/spring/spring.tscn" id="5_qfbjq"]
+[ext_resource type="Material" uid="uid://bgk1kmv1eacga" path="res://Visual/checker.material" id="6_13h0r"]
+[ext_resource type="Environment" uid="uid://qeibxwvvksfi" path="res://Visual/WorldEnvDreary.tres" id="7_sd00l"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_uikc1"]
 radius = 0.25
 height = 1.8
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_g3kx0"]
-material = ExtResource("3_qxa6c")
+material = ExtResource("3_4kwlj")
 radius = 0.25
 height = 1.8
 
@@ -67,28 +67,28 @@ _data = {
 }
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_d7aao"]
-material = ExtResource("6_kdc7o")
+material = ExtResource("6_13h0r")
 size = Vector2(200, 200)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_fedos"]
 data = PackedVector3Array(100, 0, 100, -100, 0, 100, 100, 0, -100, -100, 0, 100, -100, 0, -100, 100, 0, -100)
 
 [sub_resource type="BoxMesh" id="BoxMesh_cvlth"]
-material = ExtResource("6_kdc7o")
+material = ExtResource("6_13h0r")
 size = Vector3(15, 25, 15)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_dmoc7"]
 data = PackedVector3Array(-7.5, 12.5, 7.5, 7.5, 12.5, 7.5, -7.5, -12.5, 7.5, 7.5, 12.5, 7.5, 7.5, -12.5, 7.5, -7.5, -12.5, 7.5, 7.5, 12.5, -7.5, -7.5, 12.5, -7.5, 7.5, -12.5, -7.5, -7.5, 12.5, -7.5, -7.5, -12.5, -7.5, 7.5, -12.5, -7.5, 7.5, 12.5, 7.5, 7.5, 12.5, -7.5, 7.5, -12.5, 7.5, 7.5, 12.5, -7.5, 7.5, -12.5, -7.5, 7.5, -12.5, 7.5, -7.5, 12.5, -7.5, -7.5, 12.5, 7.5, -7.5, -12.5, -7.5, -7.5, 12.5, 7.5, -7.5, -12.5, 7.5, -7.5, -12.5, -7.5, 7.5, 12.5, 7.5, -7.5, 12.5, 7.5, 7.5, 12.5, -7.5, -7.5, 12.5, 7.5, -7.5, 12.5, -7.5, 7.5, 12.5, -7.5, -7.5, -12.5, 7.5, 7.5, -12.5, 7.5, -7.5, -12.5, -7.5, 7.5, -12.5, 7.5, 7.5, -12.5, -7.5, -7.5, -12.5, -7.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_w1afc"]
-material = ExtResource("6_kdc7o")
+material = ExtResource("6_13h0r")
 size = Vector3(10, 5, 3)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_m6wtt"]
 data = PackedVector3Array(-5, 2.5, 1.5, 5, 2.5, 1.5, -5, -2.5, 1.5, 5, 2.5, 1.5, 5, -2.5, 1.5, -5, -2.5, 1.5, 5, 2.5, -1.5, -5, 2.5, -1.5, 5, -2.5, -1.5, -5, 2.5, -1.5, -5, -2.5, -1.5, 5, -2.5, -1.5, 5, 2.5, 1.5, 5, 2.5, -1.5, 5, -2.5, 1.5, 5, 2.5, -1.5, 5, -2.5, -1.5, 5, -2.5, 1.5, -5, 2.5, -1.5, -5, 2.5, 1.5, -5, -2.5, -1.5, -5, 2.5, 1.5, -5, -2.5, 1.5, -5, -2.5, -1.5, 5, 2.5, 1.5, -5, 2.5, 1.5, 5, 2.5, -1.5, -5, 2.5, 1.5, -5, 2.5, -1.5, 5, 2.5, -1.5, -5, -2.5, 1.5, 5, -2.5, 1.5, -5, -2.5, -1.5, 5, -2.5, 1.5, 5, -2.5, -1.5, -5, -2.5, -1.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_lodfj"]
-material = ExtResource("6_kdc7o")
+material = ExtResource("6_13h0r")
 size = Vector3(3, 1, 3)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_jp47j"]
@@ -123,9 +123,9 @@ data = PackedVector3Array(-1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -
 
 [node name="Scene" type="Node3D"]
 
-[node name="GameCamera" parent="." instance=ExtResource("1_1qh0f")]
+[node name="GameCamera" parent="." instance=ExtResource("1_gut8b")]
 
-[node name="Player" parent="." instance=ExtResource("2_uojfs")]
+[node name="Player" parent="." instance=ExtResource("2_7q43h")]
 
 [node name="TallCollider" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -5)
@@ -141,7 +141,7 @@ skeleton = NodePath("../..")
 
 [node name="Actors" type="Node" parent="."]
 
-[node name="ladder" parent="Actors" instance=ExtResource("4_dfjgo")]
+[node name="ladder" parent="Actors" instance=ExtResource("4_qb2ss")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.17, 0, -8.45)
 height = 3
 
@@ -179,11 +179,11 @@ libraries = {
 }
 autoplay = "vert_plat"
 
-[node name="Spring2" parent="Actors" instance=ExtResource("5_nhulr")]
+[node name="Spring2" parent="Actors" instance=ExtResource("5_qfbjq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 0)
 velocity = 20.0
 
-[node name="Spring" parent="Actors" instance=ExtResource("5_nhulr")]
+[node name="Spring" parent="Actors" instance=ExtResource("5_qfbjq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
 
 [node name="Geometry" type="Node" parent="."]
@@ -305,4 +305,4 @@ shadow_enabled = true
 directional_shadow_blend_splits = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Env"]
-environment = ExtResource("7_pkkqi")
+environment = ExtResource("7_sd00l")

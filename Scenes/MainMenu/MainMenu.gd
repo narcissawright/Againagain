@@ -26,4 +26,4 @@ func _input(event:InputEvent) -> void:
 
 func start_with_seed(passed_seed:int) -> void:
 	Debug.printf("Starting with seed " + str(passed_seed))
-	SceneManager.change_scene('res://Levels/Corners.tscn')
+	SceneManager.change_scene('Corners')
