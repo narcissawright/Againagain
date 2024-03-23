@@ -148,6 +148,7 @@ func realignment_process() -> void:
 
 func auto() -> void:
 	var player = Utils.get_player()
+	# TODO make this not suck
 	$Debug1.position = unproject_position(camera_targets[0].global_position)
 	$Debug2.position = unproject_position(camera_targets[0].global_position + player.horizontal_velocity)
 	

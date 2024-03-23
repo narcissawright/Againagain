@@ -120,8 +120,8 @@ func login() -> void:
 	else:
 		Debug.printf("not connected - cannot provide_credentials")
 
-func request_seed() -> void:
-	CtS_request_seed.rpc_id(1)
+func request_seed(level_name:String) -> void:
+	CtS_request_seed.rpc_id(1, level_name)
 
 func here_is_a_replay(compressed_replay:Dictionary) -> void:
 	CtS_validate_replay.rpc_id(1, compressed_replay)

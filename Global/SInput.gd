@@ -2,24 +2,20 @@ extends Node
 
 enum Mode {NO_INPUT, LIVE_INPUT, FROM_REPLAY}
 var current_mode = Mode.NO_INPUT
-var r:Replay
+var r:Replay # the current input replay resource
 
-var device_id:int = 0
-var action_list:Array[StringName]
+var device_id:int = 0 # hardcoded at zero for the time being
+var action_list:Array[StringName] # list of input actions
 
-var this_frame:Dictionary
-var buffer_queue:Dictionary
+var this_frame:Dictionary # holds input information about the current frame
+var buffer_queue:Dictionary # keeping track of what actions are buffered
 const MAX_BUFFER_TIME:int = 8 # frames
 
 func _init() -> void:
 	# Set action list. Filter out the built-in ui actions.
 	action_list = InputMap.get_actions().filter(func(action): return not action.begins_with("ui_"))
-	
-	# Initiate this_frame
-	clear_this_frame()
-	
-	# Initiate buffer_queue
-	clear_buffer_queue()
+	clear_this_frame() # Initiate this_frame
+	clear_buffer_queue() # Initiate buffer_queue
 
 func clear_this_frame() -> void:
 	this_frame = {

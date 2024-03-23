@@ -16,9 +16,10 @@ var seed_time_pairs:Dictionary # { seed: unix_time }
 var db_path:String = 'user://Database.res'
 var db:Database
 
-# Validation
+# Username validation etc
 const USERNAME_LENGTH_MAX = 16
 const USERNAME_LENGTH_MIN = 1
+const Sensitive = preload('res://Netcode/ServerExclusive/sensitive_data.gd')
 
 enum Error {
 	ARGUMENT_TYPE_MISMATCH,
@@ -76,7 +77,6 @@ func peer_disconnected(peer_id:int) -> void:
 		Debug.printf("Peer#" + str(peer_id) + " disconnected.")
 
 func username_is_valid(passed_username:String) -> bool:
-	if passed_username == 'æsthetika': return true # special case for admin user.
 	if passed_username.length() < USERNAME_LENGTH_MIN: return false 
 	if passed_username.length() > USERNAME_LENGTH_MAX: return false
 	var regex := RegEx.new()
@@ -85,6 +85,11 @@ func username_is_valid(passed_username:String) -> bool:
 	if result != null:
 		if result.get_string() == passed_username:
 			return true
+	return false
+
+func username_is_reserved(passed_username:String) -> bool:
+	if Sensitive.RESERVED.has(passed_username): 
+		return true
 	return false
 
 # Client -> Server calls:
@@ -100,6 +105,9 @@ func username_is_valid(passed_username:String) -> bool:
 	# Validate username
 	username = username.to_lower()
 	if not username_is_valid(username):
+		StC_username_availability.rpc_id(id, false, username)
+		return
+	if username_is_reserved(username):
 		StC_username_availability.rpc_id(id, false, username)
 		return
 	if db.username_is_taken(username):
@@ -124,7 +132,10 @@ func username_is_valid(passed_username:String) -> bool:
 		Debug.printf("wrong game version!")
 		return
 	
-	secretkey += "KirbySSB wuz here".sha256_text()
+	# scramble key further using a fixed string
+	# ideally from a server exclusive file, not included in any public repo
+	# you can never change the string once you are actually saving keys in production!
+	secretkey += Sensitive.SCRAMBLE_STRING.sha256_text()
 	secretkey = secretkey.sha256_text()
 	
 	if db.secretkey_to_userid.has(secretkey):
@@ -147,15 +158,33 @@ func username_is_valid(passed_username:String) -> bool:
 		Debug.printf("Successful login: " + username)
 		StC_successful_login.rpc_id(id, username)
 
-@rpc('any_peer') func CtS_request_seed() -> void:
+@rpc('any_peer') func CtS_request_seed(level_name) -> void:
 	var id = multiplayer.get_remote_sender_id()
-	var new_seed = randi()
+	# Validate types
+	if typeof(level_name) != TYPE_STRING: 
+		StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
+		return
+	if not SceneManager.scene_exists(level_name):
+		StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
+		return
 	
-	''' TODO: also assign this seed specificially to a userid '''
-	seed_time_pairs[new_seed] = Utils.get_unix_time()
-	Debug.printf("seed_time_pairs: " + str(seed_time_pairs))
+	var rng_seed = randi()
 	
-	StC_provide_seed.rpc_id(id, new_seed)
+	# TODO how do I want to store this exactly... by session_id or user_id or seed
+	# if server goes down, session info is destroyed. ok
+	# if client goes down, reconnect would be a new session id, but if the other data is preserved
+	# then submitting would be okay still. if I have reconnect logic ...
+	var session_info:Dictionary = {} # this would replace seed time pairs
+	session_info[id] = {
+		'userid': peer_list[id],
+		'unix_time_start': Utils.get_unix_time(),
+		'rng_seed': rng_seed,
+		'level_name': level_name
+	}
+	#seed_time_pairs[new_seed] = Utils.get_unix_time()
+	#Debug.printf("seed_time_pairs: " + str(seed_time_pairs))
+	
+	StC_provide_seed.rpc_id(id, rng_seed)
 
 @rpc ('any_peer') func CtS_validate_replay(replay) -> void:
 	var id = multiplayer.get_remote_sender_id()

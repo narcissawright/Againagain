@@ -14,16 +14,18 @@ func connection_status_changed(status:MultiplayerPeer.ConnectionStatus) -> void:
 			$ServerMsg.text += "Connected!"
 	$ServerMsg.text += '\n'
 
+
+var level:String = "Corners"
 func _input(event:InputEvent) -> void:
 	# only place in the whole project where I don't get input via SInput.. for some reason
 	if event.is_action_pressed("start"):
 		set_process_input(false)
 		if Network.get_connection_status() == Network.CONNECTED:
 			Network.seed_from_server.connect(start_with_seed)
-			Network.request_seed()
+			Network.request_seed(level)
 		else:
 			start_with_seed(0)
 
 func start_with_seed(passed_seed:int) -> void:
 	Debug.printf("Starting with seed " + str(passed_seed))
-	SceneManager.change_scene('Corners')
+	SceneManager.change_scene(level)

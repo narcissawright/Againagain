@@ -36,7 +36,8 @@ func _ready() -> void:
 		initiate_client_and_game()
 
 func initiate_server() -> void:
-	var MAX_SIMULATION_SPEED = 3
+	# TODO test setting these only when actually doing replay verification
+	var MAX_SIMULATION_SPEED = 3 # this can actually be like 10,000 and it still syncs
 	Engine.time_scale = MAX_SIMULATION_SPEED
 	Engine.physics_ticks_per_second *= MAX_SIMULATION_SPEED
 	Engine.max_physics_steps_per_frame *= MAX_SIMULATION_SPEED
