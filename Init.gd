@@ -20,6 +20,7 @@ func is_editor_server() -> void:
 	is_server = true
 
 func _ready() -> void:
+	
 	if Engine.is_editor_hint(): 
 		return  # Don't execute tool script
 	

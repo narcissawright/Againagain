@@ -12,14 +12,21 @@ var index:int = 0 # where are we in the replay (frame #)
 @export var frame_count:int # also size() of inputs
 @export var final_time:String # stringified version of frame count. xx:xx.xx
 @export var level_name:String # or "scene_name" :P
-@export var unix_start_time:int # from server?
-@export var unix_end_time:int # from server
+@export var unix_time_start:int # from server?
+@export var unix_time_end:int # from server
 @export var userid:int # incremental id, user 0, user 1 etc. maps to display name.
 @export var username:String # display name, not permanent
 @export var date_achieved:String # YYYY-MM-DD
 @export var rank_when_set:int # 1 == WR when set
 @export var attempt_count:int # how many resets did the player do
 @export var debug_positions:Array # only used when debugging
+
+func print_contents() -> void:
+	#Debug.printf("inputs.size() " + str(inputs.size()))
+	Debug.printf("packed_zstd.size() " + str(packed_zstd.size()))
+	Debug.printf([buffer_size, rng_seed, final_position_sync, frame_count, final_time, level_name, unix_time_start, unix_time_end, userid, username, date_achieved, rank_when_set, attempt_count])
+	#Debug.printf("debug_positions.size() " + str(debug_positions.size()))
+
 
 func record_frame(input:Dictionary) -> void: # from external call
 	var stripped_input = SInput.strip_input_data(input)
@@ -48,11 +55,29 @@ func get_client_to_server_replay_data() -> Dictionary:
 	if RECORD_DEBUG_POSITIONS: 
 		dict.debug_positions = debug_positions
 	return dict
+	
+func prepare_download() -> Dictionary:
+	var dict := {
+		'packed_zstd': packed_zstd,
+		'buffer_size': buffer_size,
+		'rng_seed': rng_seed,
+		'final_position_sync': final_position_sync,
+		'frame_count': frame_count,
+		'final_time': final_time,
+		'level_name': level_name,
+		'unix_time_start': unix_time_start,
+		'unix_time_end': unix_time_end,
+		'userid': userid,
+		'username': username,
+		'date_achieved': date_achieved,
+		'rank_when_set': rank_when_set,
+		'attempt_count': attempt_count
+	}
+	return dict
 
 func reconstruct_from_server_side(data:Dictionary) -> void:
 	# rng_seed, packed_zstd, buffer_size, final_pos_sync, level_name
 	index = 0
-	#userid = data.userid
 	rng_seed = data.rng_seed
 	packed_zstd = data.packed_zstd
 	buffer_size = data.buffer_size

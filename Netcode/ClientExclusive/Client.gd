@@ -153,10 +153,16 @@ func request_leaderboard(level_name:String) -> void:
 	Debug.printf("Seed from server: " + str(passed_seed))
 	emit_signal('seed_from_server', passed_seed)
 
-@rpc func StC_provide_leaderboard(passed_leaderboard:Dictionary) -> void:
-	Debug.printf("Leaderboard recieved:")
-	Debug.printf(str(passed_leaderboard))
-	
+@rpc func StC_provide_leaderboard(level_name:String, entries:Array) -> void:
+	Debug.printf(level_name + " leaderboard recieved:")
+	Debug.printf(str(entries))
+
+@rpc func StC_replay_failed(): 
+	pass
+
+@rpc func StC_replay_syncd(): 
+	pass
+
 
 # Defined on server side only.
 @rpc func CtS_is_username_available() -> void: pass

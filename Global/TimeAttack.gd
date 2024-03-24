@@ -1,7 +1,7 @@
 extends Node
 
 var r := Replay.new()
-const time_attack_levels = ['Corners']
+const levels = ['Corners']
 
 var validation_queue:Array
 
@@ -14,7 +14,7 @@ func _ready() -> void:
 	SceneManager.new_scene.connect(check_new_scene)
 
 func check_new_scene(scene_name:String) -> void:
-	if time_attack_levels.has(scene_name):
+	if levels.has(scene_name):
 		if SInput.current_mode == SInput.Mode.LIVE_INPUT:
 			Events.player_reached_goal.connect(goal)
 			set_physics_process(true)
@@ -54,9 +54,9 @@ func end_of_replay() -> void:
 	
 	if Utils.get_player().global_position == r.final_position_sync:
 		Debug.printf("Replay Sync'd!")
-		emit_signal('replay_syncd', r)
+		emit_signal('replay_syncd', r.duplicate())
 	else:
-		emit_signal('replay_failed', r)
+		emit_signal('replay_failed', r.duplicate())
 	
 	validation_queue.erase(r)
 	if not validation_queue.is_empty():
@@ -98,4 +98,3 @@ func human_readable_time(frames:int) -> String:
 	var seconds:float = fmod(float(frames) / 60.0, 60.0)
 	var time:String = str(minutes).pad_zeros(2) + ":" + str(seconds).pad_zeros(2).pad_decimals(2)
 	return time
-

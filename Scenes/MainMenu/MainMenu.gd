@@ -1,5 +1,7 @@
 extends Node2D
 
+var level:String = "Corners"
+
 func _ready() -> void:
 	Network.connection_status_changed.connect(self.connection_status_changed)
 	connection_status_changed(Network.get_connection_status())
@@ -12,10 +14,12 @@ func connection_status_changed(status:MultiplayerPeer.ConnectionStatus) -> void:
 			$ServerMsg.text += "Connecting..."
 		Network.CONNECTED: # MultiplayerPeer.ConnectionStatus.CONNECTION_CONNECTED:
 			$ServerMsg.text += "Connected!"
+			
+			Network.request_leaderboard(level)
+			
 	$ServerMsg.text += '\n'
 
 
-var level:String = "Corners"
 func _input(event:InputEvent) -> void:
 	# only place in the whole project where I don't get input via SInput.. for some reason
 	if event.is_action_pressed("start"):

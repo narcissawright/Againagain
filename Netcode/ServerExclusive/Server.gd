@@ -54,9 +54,13 @@ func start() -> void:
 	#print(Utils.get_unix_time())
 	#Debug.printf(Utils.get_date_from_unix_time(Utils.get_unix_time()))
 	
-	Debug.printf("Starting Server.")
-	
 	load_db()
+	
+	for level in TimeAttack.levels:
+		if not db.leaderboard.has(level):
+			Debug.printf("Creating leaderboard: " + level)
+			db.leaderboard[level] = Leaderboard.new()
+			save_db()
 	
 	network.create_server(PORT, MAX_CONNECTIONS)
 	
@@ -230,10 +234,8 @@ func dictionary_is_valid(dict, validation:Dictionary) -> bool:
 		StC_disconnect.rpc_id(peerid, Error.BAD_DATA)
 		return
 	
-	session[userid].unix_time_end = Utils.get_unix_time()
-	
 	# in SESSION (server validated already):
-	# userid: unix_time_start, rng_seed, level_name, unix_time_end
+	# userid: unix_time_start, rng_seed, level_name
 	# in REPLAY (arbitrary dict from client):
 	# rng_seed, packed_zstd, buffer_size, final_pos_sync, level_name
 	
@@ -243,29 +245,50 @@ func dictionary_is_valid(dict, validation:Dictionary) -> bool:
 	# ALERT malicious client can send bad buffer_size / packed_zstd and crash server?!
 	# May need to look into other forms of decompression, and test bytes_to_var more etc.
 	
+	# Set additional properties (should this go in the replay script?)
+	r.unix_time_start = session[userid].unix_time_start
+	r.unix_time_end = Utils.get_unix_time()
+	r.userid = userid
+	r.username = db.userid_to_username[userid]
+	r.final_time = TimeAttack.human_readable_time(r.inputs.size())
+	r.date_achieved = Utils.get_date_from_unix_time(r.unix_time_start) # start or end?
+	
 	# Has the seed expired?
-	var timestamp_seconds:int = session[userid].unix_time_end - session[userid].unix_time_start
+	var unix_time_difference:int = r.unix_time_end - r.unix_time_start
 	@warning_ignore("integer_division")
 	var runtime_seconds:int = r.inputs.size() / 60
-	if timestamp_seconds > runtime_seconds + SEED_TIMESTAMP_LENIENCY:
+	if unix_time_difference > runtime_seconds + SEED_TIMESTAMP_LENIENCY:
 		StC_disconnect.rpc_id(peerid, Error.BAD_DATA)
 		return
 	
 	TimeAttack.add_replay_to_validation_queue(r)
 
-func replay_syncd(passed_replay:Replay) -> void:
-	print(passed_replay)
-	# is this passed object destroyed if the validation queue overwrites TimeAttack.r?
-	# I may want to duplicate it.
-	# I also need to find the peerid from the userid (backwards from what I normally do)
+func replay_syncd(r:Replay) -> void:
+	var peerid = peer_list.find_key(r.userid)
 	
-	# TODO - on success: more metadata, user name, attempt count, rank when set, date achieved, final time
-	# TODO - on success: saving files.
-	pass
+	# update leaderboard
+	db.leaderboard[r.level_name].add_entry(r)
+	Debug.printf(db.leaderboard[r.level_name].entries)
+	save_db()
 	
-func replay_failed(passed_replay:Replay) -> void:
-	# which peer was bad?
-	pass
+	# TODO
+	# maybe attempt count?
+	
+	# need to have a scheme to transmit LB and Replay data via rpc call without using Resource
+	# need a replay reconstructor on client-side
+	# maye a lb reconstructor but seems less important, just need a way to display stuff 
+	
+	# enable replays to be downloaded, send finalized replay back to client here?
+	
+	StC_replay_syncd.rpc_id(peerid)
+	
+func replay_failed(r:Replay) -> void:
+	Debug.printf("REPLAY FAILED!")
+	r.print_contents()
+	var peerid = peer_list.find_key(r.userid)
+	StC_replay_failed.rpc_id(peerid)
+
+# var prepared_replay:Dictionary = r.prepare_download()
 
 @rpc ('any_peer') func CtS_request_leaderboard(level_name) -> void:
 	var id = multiplayer.get_remote_sender_id()
@@ -274,18 +297,17 @@ func replay_failed(passed_replay:Replay) -> void:
 	if typeof(level_name) != TYPE_STRING:
 		StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
 		return
-	# check if level/lb exists ??
+	if not TimeAttack.levels.has(level_name):
+		StC_disconnect.rpc_id(id, Error.BAD_DATA)
+		return
+	if not db.leaderboard.has(level_name):
+		Debug.printf("db doesn't have level_name ?")
+		StC_disconnect.rpc_id(id, Error.BAD_DATA)
+		return
 	
-	var lb = {}
-	StC_provide_leaderboard.rpc_id(id, lb[level_name])
+	var entries:Array = db.leaderboard[level_name].prepare_download()
 	
-	
-	
-	#print("Peer list: ", str(peer_list))
-	
-#@rpc('any_peer')
-#func CtS_report_position(data:Dictionary) -> void:
-#	pass
+	StC_provide_leaderboard.rpc_id(id, level_name, entries)
 
 # Server -> Client calls:
 # Godot's rpc system requires the same rpc function 
@@ -296,3 +318,6 @@ func replay_failed(passed_replay:Replay) -> void:
 @rpc func StC_username_availability(): pass # available:bool
 @rpc func StC_provide_seed(): pass
 @rpc func StC_provide_leaderboard(): pass
+
+@rpc func StC_replay_failed(): pass
+@rpc func StC_replay_syncd(): pass # should these be 1 rpc func?
