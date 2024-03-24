@@ -25,6 +25,7 @@ Network="*res://Global/Network.tscn"
 SceneManager="*res://Global/SceneManager.tscn"
 SInput="*res://Global/SInput.tscn"
 Utils="*res://Global/Utils.gd"
+TimeAttack="*res://Global/TimeAttack.gd"
 
 [display]
 

@@ -31,12 +31,14 @@ enum { # connection status
 	CONNECTED
 	}
 
-enum Error { # error
+enum Error {
 	ARGUMENT_TYPE_MISMATCH,
 	VERSION_MISMATCH,
 	USERNAME_INVALID,
 	USERNAME_RESERVED,
-	SECRETKEY_MISMATCH
+	SECRETKEY_MISMATCH,
+	NOT_LOGGED_IN,
+	BAD_DATA
 	}
 
 func start() -> void:
@@ -131,6 +133,7 @@ func request_leaderboard(level_name:String) -> void:
 
 
 @rpc func StC_disconnect(error_code:int) -> void:
+	Debug.printf("Disconnect - error " + str(error_code))
 	peer.close()
 	emit_signal('error', error_code)
 	if error_code == Error.VERSION_MISMATCH:

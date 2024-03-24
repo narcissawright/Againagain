@@ -1,6 +1,8 @@
 extends Resource
 class_name Replay
 
+const RECORD_DEBUG_POSITIONS = false
+
 var index:int = 0 # where are we in the replay (frame #)
 @export var inputs:Array # uncompressed array of dictionaries
 @export var packed_zstd:PackedByteArray # two steps: var_to_bytes, compress (ZSTD)
@@ -22,7 +24,8 @@ var index:int = 0 # where are we in the replay (frame #)
 func record_frame(input:Dictionary) -> void: # from external call
 	var stripped_input = SInput.strip_input_data(input)
 	inputs.append(stripped_input)
-	#debug_positions.append(Utils.get_player().global_position)
+	if RECORD_DEBUG_POSITIONS:
+		debug_positions.append(Utils.get_player().global_position)
 
 func compress() -> void:
 	var packed:PackedByteArray = var_to_bytes(inputs)
@@ -36,47 +39,66 @@ func decompress() -> void:
 
 func get_client_to_server_replay_data() -> Dictionary:
 	var dict := {
-		"userid": userid,
 		"rng_seed": rng_seed,
 		"packed_zstd": packed_zstd,
 		"buffer_size": buffer_size,
 		"final_position_sync": final_position_sync,
-		"level_name": level_name,
-		"frame_count": frame_count
+		"level_name": level_name
 	}
+	if RECORD_DEBUG_POSITIONS: 
+		dict.debug_positions = debug_positions
 	return dict
 
 func reconstruct_from_server_side(data:Dictionary) -> void:
+	# rng_seed, packed_zstd, buffer_size, final_pos_sync, level_name
 	index = 0
-	userid = data.userid
+	#userid = data.userid
 	rng_seed = data.rng_seed
 	packed_zstd = data.packed_zstd
 	buffer_size = data.buffer_size
 	final_position_sync = data.final_position_sync
 	level_name = data.level_name
-	frame_count = data.frame_count
+	if RECORD_DEBUG_POSITIONS:
+		debug_positions = data.debug_positions
 	decompress()
+	frame_count = inputs.size()
 
-	# client side whilst creating a replay:
+	# Client side when initiating session:
+	# -seed DONE
+	# -level DONE
+	
+	# Server side when initiating session: 
+	# Kind of done? should the TimeAttack script handle the session data? and the queue...
+	# -userid 
+	# -unix time start
 	# -seed
-	# -replay file (compressed)
+	# -level
+	
+	# Client can store a single replay in TimeAttack.r
+	# Server needs to store information for multiple ongoing sessions...
+	
+	# Client side when finishing session, sent to server: (DONE!)
+	# -replay file (compressed) 
 	# -buffer size 
 	# -final position sync
-	# -# of frames (slightly redundant) (can be found by decompressing and reading the replay size)
-	# -which level
+
+	# Server side when receiving replay:
+	# -unix time end DONE
+	# -use TimeAttack.r to construct replay object and initiate validation test DONE
 	
-	# stored in Server session memory:
-	# -seed mapped to the userid who requested the seed
-	# -seed mapped to unix start time
-	# -seed mapped to which level is being played?
+	# -create a validation queue to block other users from simultaneous verification / overwriting
 	
-	# Server also gets:
-	# -unix end time when the replay is received?
-	
-	# Server verifies:
-	# -the level actually completes on the final frame
-	# -the final position sync works
-	# -the unix time for the seed did not expire (contrast replay length with unix timestamps)
+	# Server side replay validation:
+	# -does userid map to seed
+	# -does replay length fit within unix timestamp bounds, roughly
+	# -does it sync (final_position_sync) after resimulation
+
+	# After verification:
+	# -Creation of additional metadata (see below)
+	# -Update leaderboard
+	# -Let Client know time was validated
+	# -Create replay file
+	# -send replay file back to client to download locally also? :think:
 	
 	# final replay file which is downloadable or saved on the computer:
 	# Let's include as much metadata as possible

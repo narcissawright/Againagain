@@ -2,7 +2,6 @@ extends Node
 
 enum Mode {NO_INPUT, LIVE_INPUT, FROM_REPLAY}
 var current_mode = Mode.NO_INPUT
-var r:Replay # the current input replay resource
 
 var device_id:int = 0 # hardcoded at zero for the time being
 var action_list:Array[StringName] # list of input actions
@@ -36,7 +35,7 @@ func _ready() -> void:
 	Utils.set_priority(self, "input")
 
 func change_mode(new_mode:Mode) -> void:
-	#Debug.printf("Changing to mode: " + new_mode)
+	#Debug.printf("Changing to mode: " + str(new_mode))
 	clear_this_frame()
 	clear_buffer_queue()
 	current_mode = new_mode
@@ -46,11 +45,6 @@ func _physics_process(_delta:float) -> void:
 		set_physics_process(false)
 		get_tree().quit()
 		#Game.prepare_quit()
-		return
-	
-	if current_mode == Mode.FROM_REPLAY and r.index > r.inputs.size()-1:
-		change_mode(Mode.NO_INPUT)
-		Debug.printf("End of Replay. size: " + str(r.inputs.size()))
 		return
 	
 	if current_mode == Mode.NO_INPUT:
@@ -65,7 +59,6 @@ func _physics_process(_delta:float) -> void:
 			live_input()
 		Mode.FROM_REPLAY: 
 			from_replay()
-			r.index += 1
 	
 	# Analyze (buffer, just pressed)
 	for action in buffer_queue:
@@ -77,33 +70,6 @@ func _physics_process(_delta:float) -> void:
 		if not prev_actions.has(action):
 			this_frame['just_pressed'].append(action)
 			buffer_queue[action] = 1
-
-
-func init_recording() -> void: 
-	# more metadata?
-	r = Replay.new()
-
-func record_frame() -> void: 
-	r.record_frame(this_frame)
-
-func stop_recording() -> void:
-	change_mode(Mode.NO_INPUT)
-	Debug.printf("Stopped recording. frames: " + str(r.inputs.size()))
-	r.compress()
-	var replay_data:Dictionary = r.get_client_to_server_replay_data()
-	Network.here_is_a_replay(replay_data)
-
-# from Server.gd
-func prepare_replay_verification(passed_replay:Replay) -> void:
-	current_mode = Mode.NO_INPUT
-	r = passed_replay
-	r.index = 0
-	SceneManager.new_scene.connect(start_replay)
-	SceneManager.change_scene('Corners')
-
-func start_replay(_scene:String) -> void:
-	SceneManager.new_scene.disconnect(start_replay)
-	change_mode(Mode.FROM_REPLAY)
 
 func clean_stick(dir:Vector2) -> Vector2:
 	# numbers may need adjustment based on what controller the player is using.
@@ -136,13 +102,13 @@ func live_input() -> void:
 
 func from_replay() -> void:
 	# Boolean button actions.
-	this_frame['Act'] = r.inputs[r.index].get("Act", []).duplicate()
+	this_frame['Act'] = TimeAttack.r.inputs[TimeAttack.r.index].get("Act", []).duplicate()
 	# Joysticks
-	this_frame['LS'] = r.inputs[r.index].get('LS', Vector2.ZERO)
-	this_frame['RS'] = r.inputs[r.index].get('RS', Vector2.ZERO)
+	this_frame['LS'] = TimeAttack.r.inputs[TimeAttack.r.index].get('LS', Vector2.ZERO)
+	this_frame['RS'] = TimeAttack.r.inputs[TimeAttack.r.index].get('RS', Vector2.ZERO)
 	# Analog Shoulder
-	this_frame['L2'] = r.inputs[r.index].get('L2', 0.0)
-	this_frame['R2'] = r.inputs[r.index].get('R2', 0.0)
+	this_frame['L2'] = TimeAttack.r.inputs[TimeAttack.r.index].get('L2', 0.0)
+	this_frame['R2'] = TimeAttack.r.inputs[TimeAttack.r.index].get('R2', 0.0)
 
 func strip_input_data(frame_of_input:Dictionary) -> Dictionary:
 	# Convert to recorded form (strip zero'd stuff)

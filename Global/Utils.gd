@@ -15,10 +15,12 @@ func get_camera() -> Camera3D:
 
 # Process priority - all in 1 place:
 const PRIORITY_MAP:Dictionary = {
-	"debug": -2,
-	"input": -1,
+	"scenemanager": -9,
+	"debug": -8,
+	"input": -5,
 	"player": 0,
-	"camera": 1 
+	"camera": 1,
+	"timeattack": 3,
 }
 func set_priority(node:Node, mode:String) -> void:
 	node.process_priority         = PRIORITY_MAP[mode]

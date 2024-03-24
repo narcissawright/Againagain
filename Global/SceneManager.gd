@@ -18,6 +18,7 @@ func scene_exists(scene_name:String) -> bool:
 
 func _ready() -> void:
 	$FadeLayer.modulate.a = 0.0
+	Utils.set_priority(self, 'scenemanager')
 	
 func insta_change_scene(scene_name:String) -> void:
 	if not is_valid_scene_change(scene_name):
@@ -53,14 +54,16 @@ func change_scene(scene_name:String) -> void:
 		current_scene.queue_free()
 		await current_scene.tree_exited
 	
-	emit_signal("new_scene", scene_name)
-	#Debug.printf("Before ready")
+	#emit_signal("new_scene", scene_name)
+	# CAUTION syncing the input recording start time might depend on loading time or something
 	
 	var s = ResourceLoader.load_threaded_get(scene_path)
 	current_scene = s.instantiate()
 	get_tree().get_root().add_child(current_scene)
 	get_tree().set_current_scene(current_scene)
-	#Debug.printf ("after ready")
+	
+	emit_signal("new_scene", scene_name)
+	
 	$AnimationPlayer.play('fade_in')
 	await $AnimationPlayer.animation_finished
 	emit_signal("scene_fade_finished")
