@@ -271,7 +271,7 @@ func replay_failed(r:Replay) -> void:
 	r.userid = userid
 	r.username = db.userid_to_username[userid]
 	r.final_time = TimeAttack.human_readable_time(r.inputs.size())
-	r.date_achieved = Utils.get_date_from_unix_time(r.unix_time_start) # start or end?
+	r.date_achieved = Utils.get_date_from_unix_time(r.unix_time_end)
 	
 	# Has the seed expired?
 	var unix_time_difference:int = r.unix_time_end - r.unix_time_start

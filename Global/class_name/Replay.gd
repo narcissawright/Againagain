@@ -4,7 +4,7 @@ class_name Replay
 const RECORD_DEBUG_POSITIONS = false
 
 var index:int = 0 # where are we in the replay (frame #)
-@export var inputs:Array # uncompressed array of dictionaries
+var inputs:Array # uncompressed array of dictionaries
 @export var packed_zstd:PackedByteArray # two steps: var_to_bytes, compress (ZSTD)
 @export var buffer_size:int # size of decompressed packedbytearray (for packed_zstd)
 @export var rng_seed:int # from server
@@ -19,7 +19,7 @@ var index:int = 0 # where are we in the replay (frame #)
 @export var date_achieved:String # YYYY-MM-DD
 @export var rank_when_set:int # 1 == WR when set
 @export var attempt_count:int # how many resets did the player do
-@export var debug_positions:Array # only used when debugging
+var debug_positions:Array # only used when debugging
 
 func print_contents() -> void:
 	#Debug.printf("inputs.size() " + str(inputs.size()))
