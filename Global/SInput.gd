@@ -39,6 +39,7 @@ func change_mode(new_mode:Mode) -> void:
 	clear_this_frame()
 	clear_buffer_queue()
 	current_mode = new_mode
+	$action_input_display.visible = (current_mode != Mode.NO_INPUT)
 
 func _physics_process(_delta:float) -> void:
 	if Input.is_action_just_pressed("ui_cancel"):

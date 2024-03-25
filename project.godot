@@ -49,6 +49,10 @@ folder_colors={
 
 import/blender/enabled=false
 
+[gui]
+
+theme/custom_font="res://Visual/fonts/Roboto-Medium.ttf"
+
 [importer_defaults]
 
 scene={

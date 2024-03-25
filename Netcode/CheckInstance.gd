@@ -3,9 +3,6 @@ extends Node
 # This node sticks around to preserve TCPServer long enough for the other instances to get port blocked.
 # This way, one instance can be a server and another can be a client!
 
-''' TODO: free this after like 10 sec or something it doesnt need to stick around '''
-# or maybe just dont have it exist unless its from editor
-
 var instance_num := -1
 var instance_socket: TCPServer 
 
@@ -25,7 +22,7 @@ func check() -> void:
 		var window = get_tree().get_root()
 		window.mode = Window.MODE_WINDOWED
 		window.current_screen = 1
-		window.size = Vector2i(800, 450)
+		window.size = Vector2i(1600, 900)
 	else:
 		# Bring the client to the front.
 		var window = get_tree().get_root()

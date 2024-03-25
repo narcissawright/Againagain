@@ -15,6 +15,9 @@ var session:Dictionary = {}   # {userid: {unix_time_start, rng_seed, level_name}
 # Database
 var db:Database
 
+# Visual
+var display = preload('res://Netcode/ServerExclusive/ServerDisplay/ServerDisplay.tscn')
+
 # Validation etc
 const SEED_TIMESTAMP_LENIENCY:int = 10 # seconds
 const USERNAME_LENGTH_MAX = 16
@@ -41,6 +44,10 @@ func start() -> void:
 		Debug.printf("New Database")
 	db.create_missing_leaderboards()
 	
+	# Display
+	display = display.instantiate()
+	add_child(display)
+	
 	# Create Server
 	network.create_server(PORT, MAX_CONNECTIONS)
 	
@@ -53,6 +60,7 @@ func start() -> void:
 	# Start Server
 	multiplayer.set_multiplayer_peer(network)
 	Debug.printf("Server started on port " + str(PORT))
+	get_node("InstanceChecker").queue_free()
 
 func peer_connected(peerid:int) -> void:
 	Debug.printf("Peer#" + str(peerid) + " connected!")
@@ -63,6 +71,7 @@ func peer_disconnected(peerid:int) -> void:
 		var username = db.userid_to_username[peer_list[peerid]]
 		Debug.printf(username + " disconnected.")
 		peer_list.erase(peerid)
+		display.update()
 	else:
 		Debug.printf("Peer#" + str(peerid) + " disconnected.")
 
@@ -111,6 +120,7 @@ func replay_syncd(r:Replay) -> void:
 	# Update Leaderboard
 	db.leaderboard[r.level_name].add_entry(r)
 	db.save()
+	display.update()
 	
 	StC_replay_syncd.rpc_id(peerid)
 
@@ -186,6 +196,8 @@ func replay_failed(r:Replay) -> void:
 		peer_list[peerid] = userid
 		Debug.printf("Successful login: " + username)
 		StC_successful_login.rpc_id(peerid, username)
+	
+	display.update()
 
 @rpc('any_peer') func CtS_request_seed(level_name) -> void:
 	# Validate peer
@@ -205,6 +217,7 @@ func replay_failed(r:Replay) -> void:
 		'rng_seed': rng_seed,
 		'level_name': level_name
 	}
+	display.update()
 	StC_provide_seed.rpc_id(peerid, rng_seed)
 
 @rpc ('any_peer') func CtS_validate_replay(replay) -> void:
