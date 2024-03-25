@@ -156,6 +156,10 @@ func request_leaderboard(level_name:String) -> void:
 @rpc func StC_provide_leaderboard(level_name:String, entries:Array) -> void:
 	Debug.printf(level_name + " leaderboard recieved:")
 	Debug.printf(str(entries))
+	for entry in entries:
+		var rank:String = Leaderboard.rank_string(entry.rank)
+		var s:String = rank+" "+entry.username+" "+entry.final_time+" "+entry.date_achieved
+		Debug.printf(s)
 
 @rpc func StC_replay_failed(): 
 	pass

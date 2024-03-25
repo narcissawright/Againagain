@@ -9,11 +9,10 @@ const MAX_CONNECTIONS = 1000  #4095 is the cap
 var version:String = "0.1" # Game version must match client.
 
 # Session information
-var peer_list:Dictionary = {} # { peerid: userid }
-var session:Dictionary = {} # Temp data for each user for this session
+var peer_list:Dictionary = {} # {peerid: userid}
+var session:Dictionary = {}   # {userid: {unix_time_start, rng_seed, level_name}}
 
 # Database
-var db_path:String = 'user://Database.res'
 var db:Database
 
 # Validation etc
@@ -32,36 +31,17 @@ enum Error {
 	BAD_DATA
 	}
 
-func load_db() -> void:
-	# Database
-	if ResourceLoader.exists(db_path):
-		db = ResourceLoader.load(db_path)
+func start() -> void:
+	# Load Database
+	if ResourceLoader.exists(Database.path):
+		db = ResourceLoader.load(Database.path)
 		Debug.printf("Loaded Database from file")
 	else:
 		db = Database.new()
 		Debug.printf("New Database")
-
-func save_db() -> void:
-	var err = ResourceSaver.save(db, db_path)
-	if err == OK:
-		Debug.printf("Saved Database.")
-	else:
-		Debug.printf("Database did not save!!")
-		Debug.printf(str(err))
-	# maybe some way to save a database backup
-
-func start() -> void:
-	#print(Utils.get_unix_time())
-	#Debug.printf(Utils.get_date_from_unix_time(Utils.get_unix_time()))
+	db.create_missing_leaderboards()
 	
-	load_db()
-	
-	for level in TimeAttack.levels:
-		if not db.leaderboard.has(level):
-			Debug.printf("Creating leaderboard: " + level)
-			db.leaderboard[level] = Leaderboard.new()
-			save_db()
-	
+	# Create Server
 	network.create_server(PORT, MAX_CONNECTIONS)
 	
 	# Connect Signals
@@ -70,13 +50,14 @@ func start() -> void:
 	TimeAttack.replay_syncd.connect(self.replay_syncd)
 	TimeAttack.replay_failed.connect(self.replay_failed)
 	
+	# Start Server
 	multiplayer.set_multiplayer_peer(network)
 	Debug.printf("Server started on port " + str(PORT))
-	 
+
 func peer_connected(peerid:int) -> void:
 	Debug.printf("Peer#" + str(peerid) + " connected!")
 	#StC_request_identity.rpc_id(peer_id)
-	
+
 func peer_disconnected(peerid:int) -> void:
 	if peer_list.has(peerid):
 		var username = db.userid_to_username[peer_list[peerid]]
@@ -101,6 +82,44 @@ func username_is_reserved(passed_username:String) -> bool:
 		return true
 	return false
 
+func dictionary_is_valid(dict, validation:Dictionary) -> bool:
+	if typeof(dict) != TYPE_DICTIONARY: 
+		return false
+	for property_name in validation:
+		if not dict.has(property_name): 
+			return false
+	for property in dict:
+		if typeof(dict[property]) != validation[property]:
+			return false
+	return true
+
+func level_name_is_valid(level_name) -> bool:
+	if typeof(level_name) != TYPE_STRING:
+		return false
+	if not TimeAttack.levels.has(level_name):
+		return false
+	if not db.leaderboard.has(level_name):
+		Debug.printf("db doesn't have level_name ?")
+		return false
+	if not SceneManager.scene_exists(level_name):
+		return false
+	return true
+
+func replay_syncd(r:Replay) -> void:
+	var peerid = peer_list.find_key(r.userid)
+	
+	# Update Leaderboard
+	db.leaderboard[r.level_name].add_entry(r)
+	db.save()
+	
+	StC_replay_syncd.rpc_id(peerid)
+
+func replay_failed(r:Replay) -> void:
+	Debug.printf("REPLAY FAILED!")
+	r.print_contents()
+	var peerid = peer_list.find_key(r.userid)
+	StC_replay_failed.rpc_id(peerid)
+
 # Client -> Server calls:
 # These need to be validated very well to prevent any malicious input.
 @rpc('any_peer') func CtS_is_username_available(username) -> void:
@@ -122,6 +141,7 @@ func username_is_reserved(passed_username:String) -> bool:
 	if db.username_is_taken(username):
 		StC_username_availability.rpc_id(peerid, false, username)
 		return
+	
 	StC_username_availability.rpc_id(peerid, true, username)
 
 @rpc('any_peer') func CtS_login(client_version, secretkey) -> void:
@@ -162,7 +182,7 @@ func username_is_reserved(passed_username:String) -> bool:
 		db.secretkey_to_userid[secretkey] = db.secretkey_to_userid.size()
 		db.userid_to_username[userid] = username
 		Debug.printf("New user created: " + username)
-		save_db()
+		db.save()
 		peer_list[peerid] = userid
 		Debug.printf("Successful login: " + username)
 		StC_successful_login.rpc_id(peerid, username)
@@ -175,12 +195,8 @@ func username_is_reserved(passed_username:String) -> bool:
 		return
 	
 	# Validate types
-	if typeof(level_name) != TYPE_STRING: 
+	if not level_name_is_valid(level_name):
 		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
-		return
-	if not SceneManager.scene_exists(level_name):
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
-		return
 
 	var rng_seed = randi()
 	var userid:int = peer_list[peerid]
@@ -190,17 +206,6 @@ func username_is_reserved(passed_username:String) -> bool:
 		'level_name': level_name
 	}
 	StC_provide_seed.rpc_id(peerid, rng_seed)
-
-func dictionary_is_valid(dict, validation:Dictionary) -> bool:
-	if typeof(dict) != TYPE_DICTIONARY: 
-		return false
-	for property_name in validation:
-		if not dict.has(property_name): 
-			return false
-	for property in dict:
-		if typeof(dict[property]) != validation[property]:
-			return false
-	return true
 
 @rpc ('any_peer') func CtS_validate_replay(replay) -> void:
 	# Validate peer
@@ -220,6 +225,8 @@ func dictionary_is_valid(dict, validation:Dictionary) -> bool:
 	if not dictionary_is_valid(replay, validation):
 		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
 		return
+	if not level_name_is_valid(replay.level_name):
+		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
 	
 	var userid:int = peer_list[peerid] # get userid
 	
@@ -242,7 +249,7 @@ func dictionary_is_valid(dict, validation:Dictionary) -> bool:
 	var r := Replay.new()
 	r.reconstruct_from_server_side(replay)
 	Debug.printf("Got replay of size " + str(r.inputs.size()))
-	# ALERT malicious client can send bad buffer_size / packed_zstd and crash server?!
+	# DANGER malicious client can send bad buffer_size / packed_zstd and crash server?!
 	# May need to look into other forms of decompression, and test bytes_to_var more etc.
 	
 	# Set additional properties (should this go in the replay script?)
@@ -263,61 +270,24 @@ func dictionary_is_valid(dict, validation:Dictionary) -> bool:
 	
 	TimeAttack.add_replay_to_validation_queue(r)
 
-func replay_syncd(r:Replay) -> void:
-	var peerid = peer_list.find_key(r.userid)
-	
-	# update leaderboard
-	db.leaderboard[r.level_name].add_entry(r)
-	Debug.printf(db.leaderboard[r.level_name].entries)
-	save_db()
-	
-	# TODO
-	# maybe attempt count?
-	
-	# need to have a scheme to transmit LB and Replay data via rpc call without using Resource
-	# need a replay reconstructor on client-side
-	# maye a lb reconstructor but seems less important, just need a way to display stuff 
-	
-	# enable replays to be downloaded, send finalized replay back to client here?
-	
-	StC_replay_syncd.rpc_id(peerid)
-	
-func replay_failed(r:Replay) -> void:
-	Debug.printf("REPLAY FAILED!")
-	r.print_contents()
-	var peerid = peer_list.find_key(r.userid)
-	StC_replay_failed.rpc_id(peerid)
-
-# var prepared_replay:Dictionary = r.prepare_download()
-
 @rpc ('any_peer') func CtS_request_leaderboard(level_name) -> void:
-	var id = multiplayer.get_remote_sender_id()
+	var peerid = multiplayer.get_remote_sender_id()
 	
 	# Validate type
-	if typeof(level_name) != TYPE_STRING:
-		StC_disconnect.rpc_id(id, Error.ARGUMENT_TYPE_MISMATCH)
-		return
-	if not TimeAttack.levels.has(level_name):
-		StC_disconnect.rpc_id(id, Error.BAD_DATA)
-		return
-	if not db.leaderboard.has(level_name):
-		Debug.printf("db doesn't have level_name ?")
-		StC_disconnect.rpc_id(id, Error.BAD_DATA)
+	if not level_name_is_valid(level_name):
+		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
 		return
 	
 	var entries:Array = db.leaderboard[level_name].prepare_download()
-	
-	StC_provide_leaderboard.rpc_id(id, level_name, entries)
+	StC_provide_leaderboard.rpc_id(peerid, level_name, entries)
 
-# Server -> Client calls:
+# Server -> Client calls: (implemented client-side only)
 # Godot's rpc system requires the same rpc function 
 # names be present both in the client and the server.
-# Implemented client-side only:
 @rpc func StC_disconnect(): pass # error_id:int
 @rpc func StC_successful_login(): pass 
 @rpc func StC_username_availability(): pass # available:bool
 @rpc func StC_provide_seed(): pass
 @rpc func StC_provide_leaderboard(): pass
-
 @rpc func StC_replay_failed(): pass
 @rpc func StC_replay_syncd(): pass # should these be 1 rpc func?

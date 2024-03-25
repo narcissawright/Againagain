@@ -33,5 +33,18 @@ func prepare_download() -> Array:
 		var replay_dict:Dictionary = entry.prepare_download()
 		replay_dict.erase('packed_zstd')
 		replay_dict.erase('buffer_size')
+		replay_dict['rank'] = get_rank(entry)
 		lb_array.append(replay_dict)
 	return lb_array
+
+static func rank_string(rank:int) -> String:
+	var modulo_string:String = str(rank % 100).pad_zeros(2)
+	if modulo_string[0] != '1':
+		if modulo_string[1] == '1':
+			return str(rank) + "st"
+		elif modulo_string[1] == '2':
+			return str(rank) + "nd"
+		elif modulo_string[1] == '3':
+			return str(rank) + "rd"
+	return str(rank) + "th"
+	
