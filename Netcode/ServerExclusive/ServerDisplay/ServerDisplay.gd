@@ -77,7 +77,7 @@ func update() -> void:
 			label.append_text(str(r.final_position_sync) + " ")
 			label.append_text(str(r.frame_count) + " ")
 			label.append_text(str(r.final_time) + " ")
-			label.append_text(str(r.level_name) + " ")
+			label.append_text(r.level_name + " ")
 			label.append_text(str(r.unix_time_start) + " ")
 			label.append_text(str(r.unix_time_end) + " ")
 			label.append_text(str(r.userid) + " ")

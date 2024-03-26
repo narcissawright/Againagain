@@ -24,6 +24,7 @@ signal successful_login
 signal key_created
 signal username_availability
 signal seed_from_server
+signal leaderboard_received
 
 enum { # connection status
 	DISCONNECTED, 
@@ -156,12 +157,7 @@ func request_leaderboard(level_name:String) -> void:
 	emit_signal('seed_from_server', passed_seed)
 
 @rpc func StC_provide_leaderboard(level_name:String, entries:Array) -> void:
-	Debug.printf(level_name + " leaderboard recieved:")
-	#Debug.printf(str(entries))
-	for entry in entries:
-		var rank:String = Leaderboard.rank_string(entry.rank)
-		var s:String = rank+" "+entry.username+" "+entry.final_time+" "+entry.date_achieved
-		Debug.printf(s)
+	emit_signal("leaderboard_received", level_name, entries)
 
 @rpc func StC_replay_failed(): 
 	pass

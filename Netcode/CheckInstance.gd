@@ -22,7 +22,7 @@ func check() -> void:
 		var window = get_tree().get_root()
 		window.mode = Window.MODE_WINDOWED
 		window.current_screen = 1
-		window.size = Vector2i(1600, 900)
+		window.size = Vector2i(1500, 900)
 	else:
 		# Bring the client to the front.
 		var window = get_tree().get_root()
