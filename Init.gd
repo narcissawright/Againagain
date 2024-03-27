@@ -1,35 +1,14 @@
-@tool
 extends Node
-
-@export var is_server:bool:
-	get:
-		return is_server
-	set(value):
-		is_server = value
-		if Engine.is_editor_hint(): 
-			# Only useful if manually marking the project as Server.
-			# Most of the time I'll be running 2 instances from editor, and won't use this.
-			if is_server:
-				ProjectSettings.set_setting("editor/run/main_run_args", "--headless")
-				print("ProjectSettings: set --headless")
-			else:
-				ProjectSettings.set_setting("editor/run/main_run_args", "")
-				print("ProjectSettings: clear --headless")
+@export var is_server:bool
 
 func is_editor_server() -> void:
 	is_server = true
 
 func _ready() -> void:
-	
-	if Engine.is_editor_hint(): 
-		return  # Don't execute tool script
-	
 	if OS.has_feature('editor'):
 		# The project running via the editor, check which instance.
 		Events.is_editor_server.connect(self.is_editor_server)
 		Network.get_node("InstanceChecker").check()
-	else:
-		Network.get_node("InstanceChecker").queue_free()
 	
 	if is_server: # from the export bool, OR from the instance check...
 		initiate_server()

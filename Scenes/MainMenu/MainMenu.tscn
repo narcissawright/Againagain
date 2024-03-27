@@ -27,7 +27,7 @@ bbcode_enabled = true
 [node name="Leaderboard" type="VBoxContainer" parent="."]
 offset_left = 1176.0
 offset_top = 256.0
-offset_right = 1686.0
+offset_right = 1589.0
 offset_bottom = 650.0
 theme_override_constants/separation = 1
 script = ExtResource("2_v6bwi")

@@ -1,6 +1,8 @@
 extends Node
 # CLIENT
 
+var use_localhost = true
+
 var peer = ENetMultiplayerPeer.new()
 var peer_id:int = -1
 
@@ -8,6 +10,8 @@ var peer_id:int = -1
 var username:String
 var logged_in := false
 var version_mismatch := false
+
+const Sensitive = preload('res://Netcode/ClientExclusive/sensitive_data.gd')
 
 const port = 8888
 const ip = "localhost"
@@ -56,7 +60,10 @@ func start() -> void:
 
 func connect_to_server() -> void:
 	Debug.printf("Connecting...")
-	peer.create_client(ip, port)
+	if use_localhost:
+		peer.create_client("localhost", port)
+	else:
+		peer.create_client(Sensitive.ip, port)
 	multiplayer.set_multiplayer_peer(peer)
 	emit_signal('connection_status_changed', get_connection_status())
 	await Utils.timer(3.0)

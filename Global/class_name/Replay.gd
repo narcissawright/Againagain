@@ -1,7 +1,7 @@
 extends Resource
 class_name Replay
 
-const RECORD_DEBUG_POSITIONS = false
+const RECORD_DEBUG_POSITIONS = true
 
 var index:int = 0 # where are we in the replay (frame #)
 var inputs:Array # uncompressed array of dictionaries

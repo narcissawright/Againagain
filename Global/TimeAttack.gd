@@ -32,7 +32,7 @@ func _physics_process(_delta:float) -> void:
 				# Debug sync check; player position every frame
 				var replay_pos = r.debug_positions[r.index]
 				var current_pos = Utils.get_player().global_position
-				if replay_pos != current_pos:
+				if not replay_pos.is_equal_approx(current_pos):
 					Debug.printf("F:" + str(r.index) + " R" + str(replay_pos) + " != C" + str(current_pos))
 	
 	r.index += 1
@@ -52,7 +52,7 @@ func end_of_replay() -> void:
 	Debug.printf("End of Replay.")
 	Debug.printf(human_readable_time(r.index) + " - " + str(r.index) + " Frames")
 	
-	if Utils.get_player().global_position == r.final_position_sync:
+	if Utils.get_player().global_position.is_equal_approx(r.final_position_sync):
 		Debug.printf("Replay Sync'd!")
 		emit_signal('replay_syncd', r.duplicate())
 	else:

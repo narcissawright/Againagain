@@ -41,3 +41,5 @@ func printf(msg) -> void:
 			print_rich(server_color + "[b] {s} [/b][/color][/bgcolor] ".format({"s": source}) + msg)
 		else:
 			print_rich(client_color + "[b] {s} [/b][/color][/bgcolor] ".format({"s": source}) + msg)
+	else:
+		print(msg)

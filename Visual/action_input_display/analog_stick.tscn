@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://1feqanj7tsr2"]
 
-[ext_resource type="Script" path="res://ui/action_input_display/analog_stick.gd" id="1_6pntq"]
-[ext_resource type="Texture2D" uid="uid://dvno5cx3r6vlx" path="res://ui/action_input_display/analog_bounds.png" id="1_1518g"]
-[ext_resource type="Texture2D" uid="uid://rjm8883rgt2s" path="res://ui/action_input_display/analog_pos.png" id="2_ilxma"]
+[ext_resource type="Script" path="res://Visual/action_input_display/analog_stick.gd" id="1_6pntq"]
+[ext_resource type="Texture2D" uid="uid://dvno5cx3r6vlx" path="res://Visual/action_input_display/analog_bounds.png" id="1_1518g"]
+[ext_resource type="Texture2D" uid="uid://rjm8883rgt2s" path="res://Visual/action_input_display/analog_pos.png" id="2_ilxma"]
 
 [node name="analog_stick" type="Node2D"]
 script = ExtResource("1_6pntq")
