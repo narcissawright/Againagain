@@ -56,6 +56,4 @@ script = ExtResource("5_agl60")
 [node name="Ladder" type="Node" parent="States"]
 script = ExtResource("6_dyogt")
 
-[node name="RedStates" type="Node" parent="."]
-
 [node name="RGBSystem" parent="." instance=ExtResource("9_owi6d")]

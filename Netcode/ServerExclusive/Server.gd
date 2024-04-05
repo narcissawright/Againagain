@@ -117,6 +117,10 @@ func replay_failed(r:Replay) -> void:
 	var peerid = peer_list.find_key(r.userid)
 	StC_replay_failed.rpc_id(peerid)
 
+func finished_replay_validation() -> void:
+	SceneManager.free_current_scene()
+	display.show()
+
 # Client -> Server calls:
 # These need to be validated very well to prevent any malicious input.
 @rpc('any_peer') func CtS_login(client_version, secretkey) -> void:
@@ -284,10 +288,6 @@ func replay_failed(r:Replay) -> void:
 	
 	display.hide()
 	TimeAttack.add_replay_to_validation_queue(r)
-
-func finished_replay_validation() -> void:
-	SceneManager.free_current_scene()
-	display.show()
 
 @rpc ('any_peer') func CtS_request_leaderboard(level_name) -> void:
 	var peerid = multiplayer.get_remote_sender_id()

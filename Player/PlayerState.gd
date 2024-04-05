@@ -30,3 +30,19 @@ func generic_calc_velocity(dir:Vector3, frames_to_converge:int) -> void:
 func apply_gravity(gravity_modifier:float = 1.0) -> void:
 	owner.velocity.y -= 9.8 / 60.0 * gravity_modifier
 	owner.velocity.y = max(-100.0, owner.velocity.y) # Terminal
+
+func can_overlap(pos:Vector3) -> bool:
+	# purely an overlap test, no motion.
+	var query = PhysicsShapeQueryParameters3D.new()
+	var collider = owner.get_node("CollisionShape3D")
+	query.shape = collider.shape.duplicate()
+	query.shape.radius -= 0.01 # need a safe margin to prevent tangent overlap
+	query.shape.height -= 0.01
+	query.transform = Transform3D(Basis(), pos + collider.position)
+	query.collision_mask = Layers.Solid
+	var space = owner.get_world_3d().direct_space_state
+	var result:Dictionary = space.get_rest_info(query)
+#	if not result.is_empty():
+#		print(pos)
+#		print(result)
+	return result.is_empty()

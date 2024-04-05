@@ -3,18 +3,42 @@ extends Node
 enum Mode {NO_INPUT, LIVE_INPUT, FROM_REPLAY}
 var current_mode = Mode.LIVE_INPUT
 
-var device_id:int = 0 # hardcoded at zero for the time being
+var device_id:int = -1
 var action_list:Array[StringName] # list of input actions
 
 var this_frame:Dictionary # holds input information about the current frame
 var buffer_queue:Dictionary # keeping track of what actions are buffered
 const MAX_BUFFER_TIME:int = 8 # frames
 
+# numbers may need adjustment based on what controller the player is using.
+var deadzone = 0.05  # minimum stick input needed to trigger a reaction
+var maxzone = 1.0    # maximum stick input (cannot go higher)
+
 func _init() -> void:
 	# Set action list. Filter out the built-in ui actions.
 	action_list = InputMap.get_actions().filter(func(action): return not action.begins_with("ui_"))
 	clear_this_frame() # Initiate this_frame
 	clear_buffer_queue() # Initiate buffer_queue
+
+func _input(e:InputEvent) -> void:
+	# this _input function is only used to set the device, then is disabled.
+	if e is InputEventJoypadMotion:
+		if e.axis_value > deadzone:
+			set_device(e.device)
+	elif e is InputEventJoypadButton:
+		if e.button_index < 15:
+			set_device(e.device)
+
+func set_device(device:int) -> void:
+	device_id = device
+	for action in InputMap.get_actions():
+		for event in InputMap.action_get_events(action):
+			if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+				InputMap.action_erase_event(action, event)
+				event.device = device_id
+				InputMap.action_add_event(action, event)
+	Debug.printf("Device set: " + Input.get_joy_name(device_id))
+	set_process_input(false)
 
 func clear_this_frame() -> void:
 	this_frame = {
@@ -73,15 +97,10 @@ func _physics_process(_delta:float) -> void:
 			buffer_queue[action] = 1
 
 func clean_stick(dir:Vector2) -> Vector2:
-	# numbers may need adjustment based on what controller the player is using.
-	var deadzone = 0.05  # minimum stick input needed to trigger a reaction
-	var maxzone = 1.0    # maximum stick input (cannot go higher)
-	
 	var raw_length:float = dir.length()
 	var new_length:float = inverse_lerp(deadzone, maxzone, raw_length)
 	new_length = clamp(new_length, 0.0, 1.0)
 	# minimum length of 0, maximum length of 1.
-
 	return dir.normalized() * new_length
 
 func live_input() -> void:

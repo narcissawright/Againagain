@@ -153,10 +153,9 @@ func detect_attach(dir:Vector3) -> void:
 	if ledge_timeout: return
 	var ledge_dir = (-owner.basis.z).lerp(dir, dir.length()).normalized()
 	lc = ledgecast(ledge_dir)
-	# where do I check to see if the player can actually fit?
 	if not lc.is_empty():
-		owner.state = "Ledge"
-
+		if can_overlap(get_target_pos()):
+			owner.state = "Ledge"
 
 const ledge_ray_offset = 0.32
 func ledgecast(detection_dir:Vector3, debug_draw:bool = false) -> Dictionary:
