@@ -1,5 +1,7 @@
 extends Node
 
+signal device_set
+
 enum Mode {NO_INPUT, LIVE_INPUT, FROM_REPLAY}
 var current_mode = Mode.LIVE_INPUT
 
@@ -38,7 +40,17 @@ func set_device(device:int) -> void:
 				event.device = device_id
 				InputMap.action_add_event(action, event)
 	Debug.printf("Device set: " + Input.get_joy_name(device_id))
+	emit_signal('device_set')
 	set_process_input(false)
+
+func is_device_set() -> bool:
+	return device_id > -1
+
+func list_connected_joypads() -> Dictionary:
+	var dict = {}
+	for i in Input.get_connected_joypads():
+		dict[i] = Input.get_joy_name(i)
+	return dict
 
 func clear_this_frame() -> void:
 	this_frame = {
@@ -166,3 +178,10 @@ func get_left_stick() -> Vector2:
 # SInput.get_right_stick()
 func get_right_stick() -> Vector2:
 	return this_frame['RS']
+	
+#TODO replace these with this_frame once L2 R2 are factored into gameplay inputs
+func get_L2() -> float:
+	return Input.get_joy_axis(device_id, JOY_AXIS_TRIGGER_LEFT)
+
+func get_R2() -> float:
+	return Input.get_joy_axis(device_id, JOY_AXIS_TRIGGER_RIGHT)

@@ -85,6 +85,8 @@ func process_state() -> void:
 					ledge_state = ON_LEDGE
 		ON_LEDGE:
 			Debug.write("on_ledge")
+			# TODO might need to do an overlap test in here as well.
+			# or move overlap test to be part of ledgecast itself.
 			
 			var dir = get_movement_dir()
 			var dir_2d = Vector2(dir.x, dir.z)

@@ -1,0 +1,241 @@
+[gd_scene load_steps=24 format=3 uid="uid://dk7vlbnxlsqeo"]
+
+[ext_resource type="Script" path="res://Actor/crt/screens/controller_activation.gd" id="1_iwff3"]
+[ext_resource type="Texture2D" uid="uid://cc1cg4brn17pr" path="res://Actor/crt/screens/dualsense_clean.png" id="2_hb3d1"]
+[ext_resource type="Theme" uid="uid://dormhsre30xd7" path="res://Visual/themes/terminal.tres" id="2_j1lw4"]
+[ext_resource type="Texture2D" uid="uid://bun43uv4ftdti" path="res://Actor/crt/screens/circle_lit.png" id="3_141ff"]
+[ext_resource type="Texture2D" uid="uid://clcqeqce1d82x" path="res://Actor/crt/screens/sticks_outer_edges.png" id="3_dyw3b"]
+[ext_resource type="Material" uid="uid://eh35nvyqifk8" path="res://Actor/crt/crt_screen.material" id="3_p2r7s"]
+[ext_resource type="Texture2D" uid="uid://suknq6w5agtm" path="res://Actor/crt/screens/x_lit.png" id="4_eegef"]
+[ext_resource type="Texture2D" uid="uid://c0axecwc8n5k" path="res://Actor/crt/screens/square_lit.png" id="5_uhj3e"]
+[ext_resource type="Texture2D" uid="uid://caoy01ptuhvsh" path="res://Actor/crt/screens/triangle_lit.png" id="6_g7dne"]
+[ext_resource type="Texture2D" uid="uid://um472osl4cdl" path="res://Actor/crt/screens/d-up_lit.png" id="7_c5i2u"]
+[ext_resource type="Texture2D" uid="uid://ced8dxwhlqo5e" path="res://Actor/crt/screens/d-down_lit.png" id="8_4iwiy"]
+[ext_resource type="Texture2D" uid="uid://7oy1ty3au4nn" path="res://Actor/crt/screens/d-left_lit.png" id="9_prame"]
+[ext_resource type="Texture2D" uid="uid://bicdi831x0hyn" path="res://Actor/crt/screens/d-right_lit.png" id="10_c5s8e"]
+[ext_resource type="Texture2D" uid="uid://ck4nk1y6ksuuj" path="res://Actor/crt/screens/start_lit.png" id="11_1snpj"]
+[ext_resource type="Texture2D" uid="uid://0k8bqv0qjhq3" path="res://Actor/crt/screens/share_lit.png" id="12_rqgnr"]
+[ext_resource type="Texture2D" uid="uid://gqyrbogdi52o" path="res://Actor/crt/screens/L3_lit.png" id="13_oqlny"]
+[ext_resource type="Texture2D" uid="uid://olksvwhuoyxj" path="res://Actor/crt/screens/left_stick.png" id="14_6fbs7"]
+[ext_resource type="Texture2D" uid="uid://bx4kbn0tnycrw" path="res://Actor/crt/screens/R3_lit.png" id="15_7wxkt"]
+[ext_resource type="Texture2D" uid="uid://fsrbulf5iph6" path="res://Actor/crt/screens/right_stick.png" id="16_3lbu3"]
+[ext_resource type="Texture2D" uid="uid://c25v0jlp4l36m" path="res://Actor/crt/screens/L1_lit.png" id="17_e3cga"]
+[ext_resource type="Texture2D" uid="uid://klj24fg7grwg" path="res://Actor/crt/screens/L2_lit.png" id="18_pb2gx"]
+[ext_resource type="Texture2D" uid="uid://bl08h44ujldd0" path="res://Actor/crt/screens/R1_lit.png" id="19_a6obt"]
+[ext_resource type="Texture2D" uid="uid://dljl8ko57155d" path="res://Actor/crt/screens/R2_lit.png" id="20_4fwo6"]
+
+[node name="controller_container" type="SubViewportContainer"]
+offset_left = -320.0
+offset_bottom = 240.0
+
+[node name="screen_controller" type="SubViewport" parent="."]
+handle_input_locally = false
+size = Vector2i(320, 240)
+render_target_update_mode = 4
+script = ExtResource("1_iwff3")
+
+[node name="dualsense" type="Control" parent="screen_controller"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="base" type="TextureRect" parent="screen_controller/dualsense"]
+layout_mode = 0
+offset_right = 320.0
+offset_bottom = 240.0
+texture = ExtResource("2_hb3d1")
+expand_mode = 2
+
+[node name="stick_outer_edges" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 480.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("3_dyw3b")
+stretch_mode = 2
+
+[node name="circle" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("3_141ff")
+
+[node name="x" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_eegef")
+
+[node name="square" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("5_uhj3e")
+
+[node name="triangle" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("6_g7dne")
+
+[node name="dup" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("7_c5i2u")
+
+[node name="ddown" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_4iwiy")
+
+[node name="dleft" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("9_prame")
+
+[node name="dright" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("10_c5s8e")
+
+[node name="start" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("11_1snpj")
+
+[node name="select" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("12_rqgnr")
+
+[node name="l3" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("13_oqlny")
+
+[node name="left_stick" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+texture_filter = 4
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 480.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("14_6fbs7")
+
+[node name="r3" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("15_7wxkt")
+
+[node name="right_stick" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 480.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("16_3lbu3")
+
+[node name="l1" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("17_e3cga")
+
+[node name="l2" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("18_pb2gx")
+
+[node name="r1" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("19_a6obt")
+
+[node name="r2" type="TextureRect" parent="screen_controller/dualsense"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 300.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("20_4fwo6")
+
+[node name="PressAnyButton" type="RichTextLabel" parent="screen_controller"]
+offset_top = 180.0
+offset_right = 320.0
+offset_bottom = 420.0
+theme = ExtResource("2_j1lw4")
+bbcode_enabled = true
+text = "[center][color=#faa]* [/color]Press any button[color=#aaf] *[/color]
+[color=#ffa] *[/color] to initiate joypad! [color=#afa]* [/color][/center]"
+
+[node name="Device_Id" type="RichTextLabel" parent="screen_controller"]
+visible = false
+offset_top = 170.0
+offset_right = 320.0
+offset_bottom = 410.0
+theme = ExtResource("2_j1lw4")
+bbcode_enabled = true
+text = "[center][color=#223]device_id 0[/color]
+PS5 Controller[/center]"
+
+[node name="Connected" type="RichTextLabel" parent="screen_controller"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 330.0
+offset_bottom = 250.0
+theme = ExtResource("2_j1lw4")
+bbcode_enabled = true
+text = "[color=#88f]Connected joypads:[/color]
+[color=#888]*[/color] XInput Gamepad
+[color=#888]*[/color] PS5 Controller
+[color=#888]*[/color] Switch Pro Controller"
+
+[node name="CRT_filter" type="ColorRect" parent="screen_controller"]
+material = ExtResource("3_p2r7s")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 360.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2

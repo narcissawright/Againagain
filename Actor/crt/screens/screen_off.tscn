@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://7dhihltt7ccw"]
+
+[node name="off_container" type="SubViewportContainer"]
+offset_left = -320.0
+offset_bottom = 240.0
+
+[node name="off" type="SubViewport" parent="."]
+unique_name_in_owner = true
+handle_input_locally = false
+size = Vector2i(320, 240)
+render_target_update_mode = 4
+
+[node name="ColorRect" type="ColorRect" parent="off"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 360.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0862745, 0.0862745, 0.113725, 1)

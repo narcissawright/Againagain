@@ -1,9 +1,10 @@
-[gd_scene load_steps=33 format=3 uid="uid://duw8w2b8ees8n"]
+[gd_scene load_steps=34 format=3 uid="uid://duw8w2b8ees8n"]
 
 [ext_resource type="PackedScene" uid="uid://iakym63olj7q" path="res://Player/PlayerGroup.tscn" id="1_dli4c"]
 [ext_resource type="Material" uid="uid://b8dtosv0sv86n" path="res://Visual/SimpleActor.material" id="3_4kwlj"]
 [ext_resource type="PackedScene" uid="uid://guv1gvysegwo" path="res://Actor/ladder/ladder.tscn" id="4_qb2ss"]
 [ext_resource type="PackedScene" uid="uid://do8a5fbfxrskj" path="res://Actor/spring/spring.tscn" id="5_qfbjq"]
+[ext_resource type="PackedScene" uid="uid://cp6pbgd3wka7q" path="res://Actor/crt/crt.tscn" id="5_u4a4v"]
 [ext_resource type="Material" uid="uid://bgk1kmv1eacga" path="res://Visual/checker.material" id="6_13h0r"]
 [ext_resource type="Environment" uid="uid://qeibxwvvksfi" path="res://Visual/WorldEnvDreary.tres" id="7_sd00l"]
 
@@ -139,8 +140,8 @@ skeleton = NodePath("../..")
 [node name="Actors" type="Node" parent="."]
 
 [node name="ladder" parent="Actors" instance=ExtResource("4_qb2ss")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.17, 0, -8.45)
-height = 3
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 0, -8.45)
+height = 4
 
 [node name="MovingPlatform" type="AnimatableBody3D" parent="Actors"]
 process_priority = -7
@@ -183,6 +184,10 @@ velocity = 20.0
 [node name="Spring" parent="Actors" instance=ExtResource("5_qfbjq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
 velocity = 10.0
+
+[node name="CRT" parent="Actors" instance=ExtResource("5_u4a4v")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 6.5, 3.25, -7.5)
+current_channel = "controller"
 
 [node name="Geometry" type="Node" parent="."]
 

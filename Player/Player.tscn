@@ -26,12 +26,13 @@ height = 1.55
 
 [node name="Player" type="CharacterBody3D" groups=["Player"]]
 collision_layer = 2
+collision_mask = 7
 script = ExtResource("1_kya2c")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.775, 0)
-instance_shader_parameters/my_color = Color(0.772549, 0.478431, 0.992157, 1)
+instance_shader_parameters/my_color = Color(0.752941, 0.752941, 0.752941, 1)
 mesh = SubResource("CapsuleMesh_rak3o")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
