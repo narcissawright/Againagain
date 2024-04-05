@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://iakym63olj7q"]
+
+[ext_resource type="PackedScene" uid="uid://co8bcwps518uq" path="res://Player/Player.tscn" id="1_y6sjr"]
+[ext_resource type="PackedScene" uid="uid://de53gyx3ik2jl" path="res://Player/GameCamera.tscn" id="2_a8sy4"]
+[ext_resource type="PackedScene" uid="uid://bsobqsfsq3ic0" path="res://Player/CameraTarget.tscn" id="3_bvv3m"]
+
+[node name="PlayerGroup" type="Node"]
+
+[node name="Player" parent="." instance=ExtResource("1_y6sjr")]
+
+[node name="GameCamera" parent="." instance=ExtResource("2_a8sy4")]
+
+[node name="CameraTarget" parent="." instance=ExtResource("3_bvv3m")]

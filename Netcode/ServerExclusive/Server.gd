@@ -2,11 +2,8 @@ extends Node
 
 # Network
 var network = ENetMultiplayerPeer.new()
-const PORT = 8888
 const MAX_CONNECTIONS = 1000  #4095 is the cap
-
-# Game version
-var version:String = "0.1" # Game version must match client.
+const IS_SERVER = true
 
 # Session information
 var peer_list:Dictionary = {} # {peerid: userid}
@@ -20,19 +17,7 @@ var display = preload('res://Netcode/ServerExclusive/ServerDisplay/ServerDisplay
 
 # Validation etc
 const SEED_TIMESTAMP_LENIENCY:int = 10 # seconds
-const USERNAME_LENGTH_MAX = 16
-const USERNAME_LENGTH_MIN = 1
 const Sensitive = preload('res://Netcode/ServerExclusive/sensitive_data.gd')
-
-enum Error {
-	ARGUMENT_TYPE_MISMATCH,
-	VERSION_MISMATCH,
-	USERNAME_INVALID,
-	USERNAME_RESERVED,
-	SECRETKEY_MISMATCH,
-	NOT_LOGGED_IN,
-	BAD_DATA
-	}
 
 func start() -> void:
 	# Load Database
@@ -49,18 +34,20 @@ func start() -> void:
 	add_child(display)
 	
 	# Create Server
-	network.create_server(PORT, MAX_CONNECTIONS)
+	network.create_server(NetworkConst.PORT, MAX_CONNECTIONS)
 	
 	# Connect Signals
 	multiplayer.peer_connected.connect(self.peer_connected)
 	multiplayer.peer_disconnected.connect(self.peer_disconnected)
 	TimeAttack.replay_syncd.connect(self.replay_syncd)
 	TimeAttack.replay_failed.connect(self.replay_failed)
+	TimeAttack.finished_replay_validation.connect(self.finished_replay_validation)
 	
 	# Start Server
 	multiplayer.set_multiplayer_peer(network)
-	Debug.printf("Server started on port " + str(PORT))
-	get_node("InstanceChecker").queue_free()
+	Debug.printf("Server started on port " + str(NetworkConst.PORT))
+	
+	get_node("InstanceChecker").free_after_awhile()
 
 func peer_connected(peerid:int) -> void:
 	Debug.printf("Peer#" + str(peerid) + " connected!")
@@ -70,26 +57,11 @@ func peer_disconnected(peerid:int) -> void:
 	if peer_list.has(peerid):
 		var username = db.userid_to_username[peer_list[peerid]]
 		Debug.printf(username + " disconnected.")
+		session.erase(peer_list[peerid])
 		peer_list.erase(peerid)
 		display.update()
 	else:
 		Debug.printf("Peer#" + str(peerid) + " disconnected.")
-
-func username_is_valid(passed_username:String) -> bool:
-	if passed_username.length() < USERNAME_LENGTH_MIN: return false 
-	if passed_username.length() > USERNAME_LENGTH_MAX: return false
-	var regex := RegEx.new()
-	regex.compile('^[\\w.]+') #a-z A-Z 0-9 _
-	var result = regex.search(passed_username)
-	if result != null:
-		if result.get_string() == passed_username:
-			return true
-	return false
-
-func username_is_reserved(passed_username:String) -> bool:
-	if Sensitive.RESERVED.has(passed_username): 
-		return true
-	return false
 
 func dictionary_is_valid(dict, validation:Dictionary) -> bool:
 	if typeof(dict) != TYPE_DICTIONARY: 
@@ -114,6 +86,21 @@ func level_name_is_valid(level_name) -> bool:
 		return false
 	return true
 
+func username_is_available(username:String) -> bool:
+	username = username.to_lower()
+	if not Utils.username_is_valid(username):
+		return false
+	if username_is_reserved(username):
+		return false
+	if db.username_is_taken(username):
+		return false
+	return true
+
+func username_is_reserved(passed_username:String) -> bool:
+	if Sensitive.RESERVED.has(passed_username): 
+		return true
+	return false
+
 func replay_syncd(r:Replay) -> void:
 	var peerid = peer_list.find_key(r.userid)
 	
@@ -125,49 +112,27 @@ func replay_syncd(r:Replay) -> void:
 	StC_replay_syncd.rpc_id(peerid)
 
 func replay_failed(r:Replay) -> void:
-	Debug.printf("REPLAY FAILED!")
-	r.print_contents()
+	#Debug.printf("REPLAY FAILED!")
+	#r.print_contents()
 	var peerid = peer_list.find_key(r.userid)
 	StC_replay_failed.rpc_id(peerid)
 
 # Client -> Server calls:
 # These need to be validated very well to prevent any malicious input.
-@rpc('any_peer') func CtS_is_username_available(username) -> void:
-	var peerid = multiplayer.get_remote_sender_id()
-	
-	# Validate types
-	if typeof(username) != TYPE_STRING:
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
-		return
-	
-	# Validate username
-	username = username.to_lower()
-	if not username_is_valid(username):
-		StC_username_availability.rpc_id(peerid, false, username)
-		return
-	if username_is_reserved(username):
-		StC_username_availability.rpc_id(peerid, false, username)
-		return
-	if db.username_is_taken(username):
-		StC_username_availability.rpc_id(peerid, false, username)
-		return
-	
-	StC_username_availability.rpc_id(peerid, true, username)
-
 @rpc('any_peer') func CtS_login(client_version, secretkey) -> void:
 	var peerid = multiplayer.get_remote_sender_id()
 	
 	# Validate types
 	if typeof(client_version) != TYPE_STRING: 
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.ARGUMENT_TYPE_MISMATCH)
 		return
 	if typeof(secretkey) != TYPE_STRING:
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.ARGUMENT_TYPE_MISMATCH)
 		return
 	
 	# Check if client game version matches server version.
-	if client_version != version:
-		StC_disconnect.rpc_id(peerid, Error.VERSION_MISMATCH)
+	if client_version != NetworkConst.VERSION:
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.VERSION_MISMATCH)
 		Debug.printf("wrong game version!")
 		return
 	
@@ -199,16 +164,49 @@ func replay_failed(r:Replay) -> void:
 	
 	display.update()
 
+@rpc('any_peer') func CtS_send_chat_message(msg) -> void:
+	var peerid = multiplayer.get_remote_sender_id()
+	
+	# Validate
+	if typeof(msg) != TYPE_STRING:
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.ARGUMENT_TYPE_MISMATCH)
+		return
+	if not peer_list.has(peerid):
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.NOT_LOGGED_IN)
+		return
+	
+	var username = db.userid_to_username[peer_list[peerid]]
+	msg = Utils.sanitize(msg)
+	Debug.printf(username + ": " + msg)
+	if msg.length() == 0:
+		return
+	
+	var msg_array:PackedStringArray = msg.split(' ')
+	var name_change_chat_command = ['/nick', '!nick', '/username', '!username', '/name', '!name']
+	if name_change_chat_command.has(msg_array[0]):
+		if username_is_available(msg_array[1]):
+			Debug.printf("Name Change: " + username + " -> " + msg_array[1])
+			db.userid_to_username[peer_list[peerid]] = msg_array[1]
+			db.save()
+			StC_username_change_authorized.rpc_id(peerid, msg_array[1])
+		else:
+			StC_server_message.rpc_id(peerid, "Username "+msg_array[1]+" not available.")
+		return
+	
+	# If it's not a chat command, send it as a chat message.
+	StC_chat_message_received.rpc(username, msg)
+
+
 @rpc('any_peer') func CtS_request_seed(level_name) -> void:
 	# Validate peer
 	var peerid = multiplayer.get_remote_sender_id()
 	if not peer_list.has(peerid):
-		StC_disconnect.rpc_id(peerid, Error.NOT_LOGGED_IN)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.NOT_LOGGED_IN)
 		return
 	
 	# Validate types
 	if not level_name_is_valid(level_name):
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.ARGUMENT_TYPE_MISMATCH)
 
 	var rng_seed = randi()
 	var userid:int = peer_list[peerid]
@@ -224,7 +222,7 @@ func replay_failed(r:Replay) -> void:
 	# Validate peer
 	var peerid = multiplayer.get_remote_sender_id()
 	if not peer_list.has(peerid):
-		StC_disconnect.rpc_id(peerid, Error.NOT_LOGGED_IN)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.NOT_LOGGED_IN)
 		return
 	
 	# Validate types
@@ -235,23 +233,27 @@ func replay_failed(r:Replay) -> void:
 		"rng_seed": TYPE_INT,
 		"final_position_sync": TYPE_VECTOR3
 	}
+	if Replay.RECORD_PLAYER_XFORM:
+		validation.player_xform = TYPE_ARRAY
+		validation.player_velocity = TYPE_ARRAY
+		validation.camera_orientation = TYPE_ARRAY
 	if not dictionary_is_valid(replay, validation):
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.ARGUMENT_TYPE_MISMATCH)
 		return
 	if not level_name_is_valid(replay.level_name):
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.ARGUMENT_TYPE_MISMATCH)
 	
 	var userid:int = peer_list[peerid] # get userid
 	
 	# Validate session vs replay:
 	if not session.has(userid):
-		StC_disconnect.rpc_id(peerid, Error.BAD_DATA)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.BAD_DATA)
 		return
 	if replay.rng_seed != session[userid].rng_seed:
-		StC_disconnect.rpc_id(peerid, Error.BAD_DATA)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.BAD_DATA)
 		return
 	if replay.level_name != session[userid].level_name:
-		StC_disconnect.rpc_id(peerid, Error.BAD_DATA)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.BAD_DATA)
 		return
 	
 	# in SESSION (server validated already):
@@ -269,8 +271,7 @@ func replay_failed(r:Replay) -> void:
 	r.unix_time_start = session[userid].unix_time_start
 	r.unix_time_end = Utils.get_unix_time()
 	r.userid = userid
-	r.username = db.userid_to_username[userid]
-	r.final_time = TimeAttack.human_readable_time(r.inputs.size())
+	#r.name_when_set = db.userid_to_username[userid]
 	r.date_achieved = Utils.get_date_from_unix_time(r.unix_time_end)
 	
 	# Has the seed expired?
@@ -278,20 +279,28 @@ func replay_failed(r:Replay) -> void:
 	@warning_ignore("integer_division")
 	var runtime_seconds:int = r.inputs.size() / 60
 	if unix_time_difference > runtime_seconds + SEED_TIMESTAMP_LENIENCY:
-		StC_disconnect.rpc_id(peerid, Error.BAD_DATA)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.BAD_DATA)
 		return
 	
+	display.hide()
 	TimeAttack.add_replay_to_validation_queue(r)
+
+func finished_replay_validation() -> void:
+	SceneManager.free_current_scene()
+	display.show()
 
 @rpc ('any_peer') func CtS_request_leaderboard(level_name) -> void:
 	var peerid = multiplayer.get_remote_sender_id()
 	
 	# Validate type
 	if not level_name_is_valid(level_name):
-		StC_disconnect.rpc_id(peerid, Error.ARGUMENT_TYPE_MISMATCH)
+		StC_disconnect.rpc_id(peerid, NetworkConst.Error.ARGUMENT_TYPE_MISMATCH)
 		return
 	
 	var entries:Array = db.leaderboard[level_name].prepare_download()
+	for entry in entries:
+		entry.current_name = db.userid_to_username[entry.userid]
+		entry.erase('userid')
 	StC_provide_leaderboard.rpc_id(peerid, level_name, entries)
 
 # Server -> Client calls: (implemented client-side only)
@@ -299,7 +308,9 @@ func replay_failed(r:Replay) -> void:
 # names be present both in the client and the server.
 @rpc func StC_disconnect(): pass # error_id:int
 @rpc func StC_successful_login(): pass 
-@rpc func StC_username_availability(): pass # available:bool
+@rpc func StC_chat_message_received(): pass
+@rpc func StC_server_message(): pass
+@rpc func StC_username_change_authorized(): pass
 @rpc func StC_provide_seed(): pass
 @rpc func StC_provide_leaderboard(): pass
 @rpc func StC_replay_failed(): pass

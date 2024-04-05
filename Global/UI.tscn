@@ -1,0 +1,149 @@
+[gd_scene load_steps=10 format=3 uid="uid://x1j53tsgchhv"]
+
+[ext_resource type="Script" path="res://Global/UI.gd" id="1_6brw6"]
+[ext_resource type="PackedScene" uid="uid://dk38jg651xlcr" path="res://Visual/action_input_display/action_input_display.tscn" id="1_rp3m4"]
+[ext_resource type="PackedScene" uid="uid://b4ufihwt6o4ka" path="res://Visual/Chat/Chat.tscn" id="3_roumi"]
+
+[sub_resource type="Animation" id="Animation_htp50"]
+resource_name = "fade_in"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FadeLayer:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_si1bc"]
+resource_name = "fade_out"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FadeLayer:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_y3v66"]
+resource_name = "scene_name_fade_in_out"
+length = 3.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SceneNameLabel:modulate")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 2.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2kti3"]
+_data = {
+"fade_in": SubResource("Animation_htp50"),
+"fade_out": SubResource("Animation_si1bc"),
+"scene_name_fade_in_out": SubResource("Animation_y3v66")
+}
+
+[sub_resource type="Animation" id="Animation_j0nq4"]
+resource_name = "fade_in_out"
+length = 3.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 2.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4mcom"]
+_data = {
+"fade_in_out": SubResource("Animation_j0nq4")
+}
+
+[node name="UI" type="CanvasLayer"]
+layer = 3
+script = ExtResource("1_6brw6")
+
+[node name="FadeLayer" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0.0862745, 0.0862745, 0.113725, 1)
+
+[node name="AP" type="AnimationPlayer" parent="FadeLayer"]
+root_node = NodePath("../..")
+callback_mode_process = 0
+libraries = {
+"": SubResource("AnimationLibrary_2kti3")
+}
+
+[node name="SceneNameLabel" type="Label" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_right = 1920.0
+offset_bottom = 270.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 48
+text = "new_scene_name"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AP" type="AnimationPlayer" parent="SceneNameLabel"]
+libraries = {
+"": SubResource("AnimationLibrary_4mcom")
+}
+
+[node name="action_input_display" parent="." instance=ExtResource("1_rp3m4")]
+position = Vector2(1750, 967)
+
+[node name="DebugLabel" type="RichTextLabel" parent="."]
+offset_left = 16.0
+offset_top = 9.0
+offset_right = 1016.0
+offset_bottom = 509.0
+bbcode_enabled = true
+
+[node name="Timer" type="RichTextLabel" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -96.0
+offset_top = -33.0
+offset_right = -16.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/shadow_outline_size = 1
+theme_override_font_sizes/normal_font_size = 20
+text = "00:00.00"
+fit_content = true
+metadata/_edit_lock_ = true
+
+[node name="Chat" parent="." instance=ExtResource("3_roumi")]

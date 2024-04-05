@@ -8,8 +8,8 @@ signal normal_camera()
 signal ladder_touched(position:Vector3, y_rot:float, height:int)
 signal player_reached_goal()
 
-
-
+signal chat_message_received(from:String, msg:String)
+signal server_message(msg:String)
 
 
 # Game State

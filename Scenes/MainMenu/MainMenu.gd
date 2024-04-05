@@ -3,26 +3,23 @@ extends Node2D
 var level:String = "Corners"
 
 func _ready() -> void:
+	SInput.change_mode(SInput.Mode.LIVE_INPUT)
 	Network.connection_status_changed.connect(self.connection_status_changed)
 	connection_status_changed(Network.get_connection_status())
 	
 func connection_status_changed(status:MultiplayerPeer.ConnectionStatus) -> void:
 	match status:
 		Network.DISCONNECTED: # MultiplayerPeer.ConnectionStatus.CONNECTION_DISCONNECTED:
-			$ServerMsg.text += "Disconnected."
+			pass
 		Network.CONNECTING: # MultiplayerPeer.ConnectionStatus.CONNECTION_CONNECTING:
-			$ServerMsg.text += "Connecting..."
+			pass
 		Network.CONNECTED: # MultiplayerPeer.ConnectionStatus.CONNECTION_CONNECTED:
-			$ServerMsg.text += "Connected!"
-			
 			Network.request_leaderboard(level)
-			
-	$ServerMsg.text += '\n'
 
 
 func _input(event:InputEvent) -> void:
 	# only place in the whole project where I don't get input via SInput.. for some reason
-	if event.is_action_pressed("start"):
+	if event.is_action_pressed("start") and not SceneManager.changing:
 		set_process_input(false)
 		if Network.get_connection_status() == Network.CONNECTED:
 			Network.seed_from_server.connect(start_with_seed)
@@ -32,6 +29,7 @@ func _input(event:InputEvent) -> void:
 
 func start_with_seed(passed_seed:int) -> void:
 	Debug.printf("Starting with seed " + str(passed_seed))
+	TimeAttack.r = Replay.new()
 	TimeAttack.r.rng_seed = passed_seed
 	TimeAttack.r.level_name = level
 	SceneManager.change_scene(level)

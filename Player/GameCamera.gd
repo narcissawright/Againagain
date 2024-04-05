@@ -1,7 +1,5 @@
 extends Camera3D
 
-#signal camera_dir_changed(camera_dir)
-
 # Settings
 var invert_x = false
 var invert_y = false
@@ -100,19 +98,19 @@ func realign_camera() -> void:
 func reset_orientation_goal() -> void:
 	orientation_goal = orientation_default.rotated(Vector3.UP, camera_targets[0].global_rotation.y)
 
-func update_orientation_goal_complex_logic_unused() -> void:
-	# to be improved? blend facing direction w/ control stick distance?
-	var input_dir = SInput.get_left_stick()
-	if input_dir.is_equal_approx(Vector2.ZERO):
-		orientation_goal = orientation_default.rotated(Vector3.UP, camera_targets[0].global_rotation.y)
-	else:
-		var camera_forwards = basis.z
-		camera_forwards.y = 0.0
-		camera_forwards = camera_forwards.normalized()
-		var camera_sideways:Vector3 = camera_forwards.rotated(Vector3.UP,PI/2.0)
-		var direction:Vector3 = (camera_forwards*input_dir.y)+(camera_sideways*input_dir.x)
-		direction = -direction.normalized()
-		orientation_goal = direction*orientation_default.z + Vector3(0,orientation_default.y,0)
+#func update_orientation_goal_complex_logic_unused() -> void:
+	## to be improved? blend facing direction w/ control stick distance?
+	#var input_dir = SInput.get_left_stick()
+	#if input_dir.is_equal_approx(Vector2.ZERO):
+		#orientation_goal = orientation_default.rotated(Vector3.UP, camera_targets[0].global_rotation.y)
+	#else:
+		#var camera_forwards = basis.z
+		#camera_forwards.y = 0.0
+		#camera_forwards = camera_forwards.normalized()
+		#var camera_sideways:Vector3 = camera_forwards.rotated(Vector3.UP,PI/2.0)
+		#var direction:Vector3 = (camera_forwards*input_dir.y)+(camera_sideways*input_dir.x)
+		#direction = -direction.normalized()
+		#orientation_goal = direction*orientation_default.z + Vector3(0,orientation_default.y,0)
 
 func realignment_process() -> void:
 	# this function has potential improvement.
@@ -170,7 +168,7 @@ func _physics_process(_t:float) -> void:
 
 	match current_mode:
 		CameraMode.NORMAL:
-			auto()
+			#auto()
 			if SInput.is_just_pressed('camera_realign'):
 				realign_camera()
 			update_orientation()
@@ -284,15 +282,17 @@ func _physics_process(_t:float) -> void:
 #func _on_player_voided():
 	#play_fade_out()
 
-func _on_ladder_camera(ladder_forwards:Vector3, midpoint:Vector3) -> void:
-	lf = ladder_forwards
-	mid = midpoint
+func _on_normal_camera() -> void:
+	current_mode = CameraMode.NORMAL
+	next_mode = CameraMode.NORMAL
+
+var ladder_forwards:Vector3
+
+func _on_ladder_camera(lf:Vector3, _midpoint:Vector3) -> void:
+	ladder_forwards = lf
 	orientation_goal = clamp_orientation()
 	next_mode = CameraMode.LADDER
 	realign_camera()
-
-var lf
-var mid
 
 func ladder() -> void:
 	# this func is kind of like update_orientation but skips the vertical clamping
@@ -307,13 +307,9 @@ func ladder() -> void:
 	orientation = clamp_orientation()
 
 func clamp_orientation() -> Vector3:
-	var amt = remap(orientation.dot(lf), -1.0, 0.5, 1.0, 0.0)
+	var amt = remap(orientation.dot(ladder_forwards), -1.0, 0.5, 1.0, 0.0)
 	amt = clamp(amt, 0.0, 1.0)
-	var o = orientation.slerp(lf, amt)
+	var o = orientation.slerp(ladder_forwards, amt)
 	return o.normalized()
-
-func _on_normal_camera() -> void:
-	current_mode = CameraMode.NORMAL
-	next_mode = CameraMode.NORMAL
 	
 

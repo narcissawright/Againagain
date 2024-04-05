@@ -1,0 +1,64 @@
+[gd_scene load_steps=5 format=3 uid="uid://b4ufihwt6o4ka"]
+
+[ext_resource type="Script" path="res://Netcode/Chat.gd" id="1_tmf3g"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_is4qr"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_but6n"]
+bg_color = Color(0, 0, 0, 0.501961)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 0.501961)
+border_blend = true
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jx6f8"]
+
+[node name="Chat" type="MarginContainer"]
+offset_top = 500.0
+offset_right = 392.0
+offset_bottom = 1080.0
+size_flags_vertical = 0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 9
+script = ExtResource("1_tmf3g")
+
+[node name="ChatBox" type="RichTextLabel" parent="."]
+custom_minimum_size = Vector2(0, 530)
+layout_mode = 2
+size_flags_vertical = 0
+focus_mode = 2
+theme_override_colors/default_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.501961)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/shadow_outline_size = 1
+theme_override_styles/focus = SubResource("StyleBoxEmpty_is4qr")
+bbcode_enabled = true
+scroll_active = false
+scroll_following = true
+selection_enabled = true
+
+[node name="LineEdit" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_colors/font_placeholder_color = Color(0.4, 0.4, 0.4, 0.501961)
+theme_override_colors/caret_color = Color(0.666667, 0.666667, 0.666667, 1)
+theme_override_colors/selection_color = Color(0.0745098, 0.54902, 0.572549, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_but6n")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_jx6f8")
+placeholder_text = "chat message"
+editable = false
+context_menu_enabled = false
+virtual_keyboard_enabled = false
+caret_blink = true
+
+[connection signal="text_changed" from="LineEdit" to="." method="_on_line_edit_text_changed"]
+[connection signal="text_submitted" from="LineEdit" to="." method="_on_line_edit_text_submitted"]

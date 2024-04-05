@@ -24,9 +24,9 @@ func process_state() -> void:
 	
 	%Ledge.detect_attach(dir)
 	
-	if owner.global_position.y > peak_height:
-		peak_height = owner.global_position.y
-		air_time_at_peak = owner.air_frames
+	#if owner.global_position.y > peak_height:
+		#peak_height = owner.global_position.y
+		#air_time_at_peak = owner.air_frames
 	#peak_height = max(owner.global_position.y, peak_height)
 
 func air_calc_velocity(dir:Vector3) -> void:

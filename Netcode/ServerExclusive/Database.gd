@@ -22,6 +22,8 @@ func save() -> void:
 		Debug.printf(str(err))
 	# maybe some way to save a database backup
 
-func username_is_taken(username:String) -> bool:
-	if userid_to_username.values().has(username): return true
+func username_is_taken(proposed_name:String) -> bool:
+	for taken_name in userid_to_username.values():
+		# case insensitive comparison (yellow == YELLOW == yElLoW)
+		if taken_name.nocasecmp_to(proposed_name) == 0: return true
 	return false

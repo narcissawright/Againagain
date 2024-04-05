@@ -1,7 +1,6 @@
-[gd_scene load_steps=34 format=3 uid="uid://duw8w2b8ees8n"]
+[gd_scene load_steps=33 format=3 uid="uid://duw8w2b8ees8n"]
 
-[ext_resource type="PackedScene" uid="uid://de53gyx3ik2jl" path="res://Player/GameCamera.tscn" id="1_gut8b"]
-[ext_resource type="PackedScene" uid="uid://co8bcwps518uq" path="res://Player/Player.tscn" id="2_7q43h"]
+[ext_resource type="PackedScene" uid="uid://iakym63olj7q" path="res://Player/PlayerGroup.tscn" id="1_dli4c"]
 [ext_resource type="Material" uid="uid://b8dtosv0sv86n" path="res://Visual/SimpleActor.material" id="3_4kwlj"]
 [ext_resource type="PackedScene" uid="uid://guv1gvysegwo" path="res://Actor/ladder/ladder.tscn" id="4_qb2ss"]
 [ext_resource type="PackedScene" uid="uid://do8a5fbfxrskj" path="res://Actor/spring/spring.tscn" id="5_qfbjq"]
@@ -123,9 +122,7 @@ data = PackedVector3Array(-1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -
 
 [node name="Scene" type="Node3D"]
 
-[node name="GameCamera" parent="." instance=ExtResource("1_gut8b")]
-
-[node name="Player" parent="." instance=ExtResource("2_7q43h")]
+[node name="PlayerGroup" parent="." instance=ExtResource("1_dli4c")]
 
 [node name="TallCollider" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -5)
@@ -135,7 +132,7 @@ collision_layer = 4
 shape = SubResource("CapsuleShape3D_uikc1")
 
 [node name="TallSized" type="MeshInstance3D" parent="TallCollider"]
-instance_shader_parameters/my_color = Color(0.596078, 0.294118, 0.784314, 1)
+instance_shader_parameters/my_color = Color(0.137255, 0.627451, 0.215686, 1)
 mesh = SubResource("CapsuleMesh_g3kx0")
 skeleton = NodePath("../..")
 
@@ -185,6 +182,7 @@ velocity = 20.0
 
 [node name="Spring" parent="Actors" instance=ExtResource("5_qfbjq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
+velocity = 10.0
 
 [node name="Geometry" type="Node" parent="."]
 

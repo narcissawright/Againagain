@@ -1,5 +1,6 @@
-[gd_scene load_steps=14 format=3 uid="uid://dk38jg651xlcr"]
+[gd_scene load_steps=15 format=3 uid="uid://dk38jg651xlcr"]
 
+[ext_resource type="Script" path="res://Visual/action_input_display/action_palette.gd" id="1_5i2v8"]
 [ext_resource type="Script" path="res://Visual/action_input_display/input_debug_label.gd" id="2_2ex6g"]
 [ext_resource type="Script" path="res://Visual/action_input_display/analog_stick.gd" id="3_xpnkw"]
 [ext_resource type="Texture2D" uid="uid://dvno5cx3r6vlx" path="res://Visual/action_input_display/analog_bounds.png" id="4_8jc0t"]
@@ -16,12 +17,15 @@
 
 [node name="action_input_display" type="Node2D"]
 z_index = 1
+position = Vector2(0, 800)
+script = ExtResource("1_5i2v8")
 
 [node name="input_debug_label" type="RichTextLabel" parent="."]
-offset_left = 32.0
-offset_top = 360.0
-offset_right = 1112.0
-offset_bottom = 400.0
+visible = false
+offset_left = 16.0
+offset_top = 80.0
+offset_right = 1096.0
+offset_bottom = 120.0
 bbcode_enabled = true
 text = "[ \"jump\" ]"
 scroll_active = false
@@ -29,11 +33,10 @@ autowrap_mode = 0
 script = ExtResource("2_2ex6g")
 
 [node name="analog_sticks" type="Node2D" parent="."]
-position = Vector2(0, 280)
 script = ExtResource("3_xpnkw")
 
 [node name="left_stick" type="Node2D" parent="analog_sticks"]
-position = Vector2(10, 10)
+position = Vector2(16, 9)
 
 [node name="shadow" type="Sprite2D" parent="analog_sticks/left_stick"]
 self_modulate = Color(0, 0, 0, 1)
@@ -53,7 +56,7 @@ texture = ExtResource("5_lrhtn")
 offset = Vector2(32, 32)
 
 [node name="right_stick" type="Node2D" parent="analog_sticks"]
-position = Vector2(84, 10)
+position = Vector2(90, 9)
 
 [node name="shadow_2" type="Sprite2D" parent="analog_sticks/right_stick"]
 self_modulate = Color(0, 0, 0, 1)
@@ -74,7 +77,7 @@ offset = Vector2(32, 32)
 
 [node name="mouse" type="Node2D" parent="."]
 visible = false
-position = Vector2(84, 220)
+position = Vector2(84, 0)
 script = ExtResource("6_dm2xu")
 
 [node name="mouse_sprite" type="Sprite2D" parent="mouse"]
@@ -89,7 +92,7 @@ offset = Vector2(1, 1)
 
 [node name="d_pad" type="Sprite2D" parent="."]
 visible = false
-position = Vector2(10, 220)
+position = Vector2(10, 0)
 texture = ExtResource("9_82f7m")
 centered = false
 offset = Vector2(1, 1)

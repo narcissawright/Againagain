@@ -1,9 +1,0 @@
-[gd_scene load_steps=3 format=3 uid="uid://blcg20nmb3ss"]
-
-[ext_resource type="Script" path="res://Global/SInput.gd" id="1_rlbfn"]
-[ext_resource type="PackedScene" uid="uid://dk38jg651xlcr" path="res://Visual/action_input_display/action_input_display.tscn" id="2_8jr8v"]
-
-[node name="SInput" type="Node"]
-script = ExtResource("1_rlbfn")
-
-[node name="action_input_display" parent="." instance=ExtResource("2_8jr8v")]

@@ -6,6 +6,11 @@ extends Node
 var instance_num := -1
 var instance_socket: TCPServer 
 
+func free_after_awhile() -> void:
+	# giving some time so that both instances are ready before deleting the TCPServer
+	await Utils.timer(10.0)
+	queue_free()
+
 func check() -> void:
 	# This is a project running from the editor! Let's check which instance we are
 	instance_socket = TCPServer.new()
@@ -22,7 +27,7 @@ func check() -> void:
 		var window = get_tree().get_root()
 		window.mode = Window.MODE_WINDOWED
 		window.current_screen = 1
-		window.size = Vector2i(1500, 900)
+		window.size = Vector2i(1200, 600)
 	else:
 		# Bring the client to the front.
 		var window = get_tree().get_root()

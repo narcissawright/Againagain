@@ -43,7 +43,7 @@ func timeout() -> void:
 	await Utils.timer(0.5)
 	ledge_timeout = false
 
-const minimum_attach_frames:int = 8
+const minimum_attach_frames:int = 6
 var current_attach_frame:int = 0
 
 func attach_process() -> bool:
@@ -93,28 +93,24 @@ func process_state() -> void:
 			
 			var x = dir_2d.dot(wall_cross_2d)
 			var y = -dir_2d.dot(wall_normal_2d)
-			# Maybe if y was already at a high abs value when entering the ledgegrab
-			# it cannot count as a climb up /drop off input
-			# until it goes down again .. ??
 			
-#			Debug.write("Ledge: " + str(lc))
-#			Debug.write("X: " + str(x) + "  Y: " + str(y))
-			
-			var input_threshold = 0.85
-			
-			if y > input_threshold:
-				# can the player actually climb up here?
-				# and how do I check for that 
-				if true:
-					#%carrie_placeholder.show()
-					#%carrie_ledgegrab.hide()
-					ledge_state = CLIMB_UP
+			#Debug.write("Ledge: " + str(lc))
+			#Debug.write("X: " + str(x) + "  Y: " + str(y))
+			if SInput.is_queued("jump"):
+				# Consider some animation about climb up vs fall off (jump back also?)
+				if y >= 0.0:
+					# can the player actually climb up here?
+					# and how do I check for that 
+					if true:
+						#%carrie_placeholder.show()
+						#%carrie_ledgegrab.hide()
+						ledge_state = CLIMB_UP
+						return
+				else:
+					owner.state = "Air"
 					return
-			elif y < -input_threshold:
-				owner.state = "Air"
-				return
 			
-			x = smoothstep(0.1, input_threshold, abs(x)) * sign(x)
+			x = smoothstep(0.1, 0.85, abs(x)) * sign(x)
 			# perhaps if the y value is high the x value should be zero.
 			# that way you are sure you're not pressing near the climb/drop direction.
 			

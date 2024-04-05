@@ -7,13 +7,8 @@ func enter() -> void:
 	air_transition_frames = 0
 	
 	# Remove excess speed
-	var hvel = Vector2(owner.velocity.x, owner.velocity.z)
-	#print(hvel.length()) # 10.22000
-	# prevents short hops from gaining continual speed (grounded/initjump doesnt decay back to 7 if tapped quick)
-	if hvel.length() > 6.0:
-		hvel = hvel.normalized() * 6.0
-		owner.velocity.x = hvel.x
-		owner.velocity.z = hvel.y
+	if owner.horizontal_velocity.length() > 6.0:
+		owner.horizontal_velocity = owner.horizontal_velocity.normalized() * 6.0
 
 func process_state() -> void:
 	var dir:Vector3 = get_movement_dir()

@@ -6,7 +6,9 @@ class_name Leaderboard
 func add_entry(r:Replay) -> void:
 	# Don't store uncompressed inputs or debug positions
 	r.inputs = []
-	r.debug_positions = []
+	r.player_xform = []
+	r.player_velocity = []
+	r.camera_orientation = []
 	r.rank_when_set = get_rank(r)
 	entries.append(r)
 	entries.sort_custom(sort_entries_by_frame_count)
@@ -31,10 +33,13 @@ func prepare_download() -> Array:
 	var lb_array = []
 	for entry in entries:
 		var replay_dict:Dictionary = entry.prepare_download()
-		replay_dict.erase('packed_zstd')
-		replay_dict.erase('buffer_size')
-		replay_dict['rank'] = get_rank(entry)
-		lb_array.append(replay_dict)
+		var minimal_data:Dictionary = {
+			"rank": get_rank(entry),
+			"userid": replay_dict.userid,
+			"frame_count": replay_dict.frame_count,
+			"date_achieved": replay_dict.date_achieved
+		}
+		lb_array.append(minimal_data)
 	return lb_array
 
 static func rank_string(rank:int) -> String:

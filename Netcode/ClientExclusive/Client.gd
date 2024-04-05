@@ -1,49 +1,28 @@
 extends Node
 # CLIENT
 
-var use_localhost = true
+var use_localhost = false
 
 var peer = ENetMultiplayerPeer.new()
 var peer_id:int = -1
 
 # do I wanna keep a bunch of variables here?
 var username:String
-var logged_in := false
-var version_mismatch := false
+var logged_in := false # not really used at the moment
 
 const Sensitive = preload('res://Netcode/ClientExclusive/sensitive_data.gd')
-
-const port = 8888
-const ip = "localhost"
-const CLIENT_VERSION:String = "0.1"
 const SECRETKEY_PATH:String = "user://secret.key"
-const USERNAME_LENGTH_MAX = 16
-const USERNAME_LENGTH_MIN = 1
+const IS_SERVER = false
 
-signal error
-signal connection_failed
-signal connection_status_changed
-signal failed_login
-signal successful_login
-signal key_created
-signal username_availability
-signal seed_from_server
-signal leaderboard_received
+signal connection_status_changed # chat, mainmenu
+signal username_availability # used only in this script, not actually used by project
+signal seed_from_server # used in mainmenu
+signal leaderboard_received # used by lbdisplay
 
 enum { # connection status
 	DISCONNECTED, 
 	CONNECTING, 
 	CONNECTED
-	}
-
-enum Error {
-	ARGUMENT_TYPE_MISMATCH,
-	VERSION_MISMATCH,
-	USERNAME_INVALID,
-	USERNAME_RESERVED,
-	SECRETKEY_MISMATCH,
-	NOT_LOGGED_IN,
-	BAD_DATA
 	}
 
 func start() -> void:
@@ -61,9 +40,9 @@ func start() -> void:
 func connect_to_server() -> void:
 	Debug.printf("Connecting...")
 	if use_localhost:
-		peer.create_client("localhost", port)
+		peer.create_client("localhost", NetworkConst.PORT)
 	else:
-		peer.create_client(Sensitive.ip, port)
+		peer.create_client(Sensitive.ip, NetworkConst.PORT)
 	multiplayer.set_multiplayer_peer(peer)
 	emit_signal('connection_status_changed', get_connection_status())
 	await Utils.timer(3.0)
@@ -73,9 +52,8 @@ func connect_to_server() -> void:
 
 func _connected_to_server() -> void:
 	Debug.printf("Connected.")
+	get_node("InstanceChecker").free_after_awhile()
 	peer_id = multiplayer.get_unique_id()
-	
-	get_node("InstanceChecker").queue_free()
 	emit_signal('connection_status_changed', get_connection_status())
 	if FileAccess.file_exists(SECRETKEY_PATH):
 		login()
@@ -85,7 +63,6 @@ func _connected_to_server() -> void:
 	
 func _connection_failed() -> void:
 	Debug.printf("Connection failed.")
-	emit_signal('connection_failed')
 	emit_signal('connection_status_changed', get_connection_status())
 	logged_in = false
 
@@ -97,21 +74,6 @@ func _server_disconnected() -> void:
 func get_connection_status() -> int:
 	return peer.get_connection_status()
 
-#func username_is_valid(passed_username:String) -> bool:
-	#passed_username = passed_username.to_lower()
-	#if passed_username.length() < USERNAME_LENGTH_MIN: return false 
-	#if passed_username.length() > USERNAME_LENGTH_MAX: return false
-	#var regex := RegEx.new()
-	#regex.compile('^[\\w.]+') #a-z A-Z 0-9 _
-	#var result = regex.search(passed_username)
-	#if result != null:
-		#if result.get_string() == passed_username:
-			#return true
-	#return false
-	#
-#func is_username_available(passed_username:String) -> void:
-	#CtS_is_username_available.rpc_id(1, passed_username)
-
 func create_key():
 	Debug.printf("Creating secret key")
 	var secretkey:String = Crypto.new().generate_random_bytes(32).hex_encode()
@@ -119,45 +81,51 @@ func create_key():
 	var file = FileAccess.open(SECRETKEY_PATH, FileAccess.WRITE)
 	file.store_line(secretkey)
 	file.close()
-	emit_signal('key_created')
+
+# Functions leading into RPC calls (Client to Server):
 
 func login() -> void:
-	Debug.printf("Login")
 	if get_connection_status() == CONNECTED:
 		var file = FileAccess.open(SECRETKEY_PATH, FileAccess.READ)
 		var secretkey:String = file.get_line().sha256_text()
 		file.close()
-		CtS_login.rpc_id(1, CLIENT_VERSION, secretkey)
+		CtS_login.rpc_id(1, NetworkConst.VERSION, secretkey)
 		secretkey = ''
-	else:
-		Debug.printf("not connected - cannot provide_credentials")
 
 func request_seed(level_name:String) -> void:
-	CtS_request_seed.rpc_id(1, level_name)
+	if get_connection_status() == CONNECTED:
+		CtS_request_seed.rpc_id(1, level_name)
 
 func here_is_a_replay(compressed_replay:Dictionary) -> void:
-	CtS_validate_replay.rpc_id(1, compressed_replay)
+	if get_connection_status() == CONNECTED:
+		CtS_validate_replay.rpc_id(1, compressed_replay)
 	
 func request_leaderboard(level_name:String) -> void:
-	CtS_request_leaderboard.rpc_id(1, level_name)
+	if get_connection_status() == CONNECTED:
+		CtS_request_leaderboard.rpc_id(1, level_name)
 
+func send_chat_message(msg:String) -> void:
+	if get_connection_status() == CONNECTED:
+		CtS_send_chat_message.rpc_id(1, msg)
+
+#func is_username_available(passed_username:String) -> void:
+	#CtS_is_username_available.rpc_id(1, passed_username)
+
+# RPC from Server:
 
 @rpc func StC_disconnect(error_code:int) -> void:
 	Debug.printf("Disconnect - error " + str(error_code))
 	peer.close()
-	emit_signal('error', error_code)
-	if error_code == Error.VERSION_MISMATCH:
-		version_mismatch = true
+	if error_code == NetworkConst.Error.VERSION_MISMATCH:
 		Debug.printf("Version mismatch!")
 
 @rpc func StC_successful_login(passed_username:String) -> void:
 	username = passed_username
 	Debug.printf("Successful login as " + username)
 	logged_in = true
-	emit_signal('successful_login')
 
-@rpc func StC_username_availability(available:bool, passed_username:String) -> void:
-	emit_signal('username_availability', available, passed_username)
+#@rpc func StC_username_availability(available:bool, passed_username:String) -> void:
+	#emit_signal('username_availability', available, passed_username)
 
 @rpc func StC_provide_seed(passed_seed:int) -> void:
 	Debug.printf("Seed from server: " + str(passed_seed))
@@ -172,10 +140,20 @@ func request_leaderboard(level_name:String) -> void:
 @rpc func StC_replay_syncd(): 
 	pass
 
+@rpc func StC_chat_message_received(sender:String, msg:String) -> void:
+	Events.chat_message_received.emit(sender, msg)
 
-# Defined on server side only.
-@rpc func CtS_is_username_available() -> void: pass
+@rpc func StC_username_change_authorized(new_name:String) -> void:
+	username = new_name
+	Events.server_message.emit("Username changed to " + new_name)
+	
+@rpc func StC_server_message(msg:String) -> void:
+	Events.server_message.emit(msg)
+
+# Defined on server side only:
+#@rpc func CtS_is_username_available() -> void: pass
 @rpc func CtS_login() -> void: pass
 @rpc func CtS_request_seed() -> void: pass
 @rpc func CtS_validate_replay() -> void: pass
 @rpc func CtS_request_leaderboard() -> void: pass
+@rpc func CtS_send_chat_message() -> void: pass

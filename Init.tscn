@@ -4,3 +4,4 @@
 
 [node name="Init" type="Node"]
 script = ExtResource("1_bflp7")
+use_instance_checker = true

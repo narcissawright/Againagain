@@ -6,13 +6,14 @@ func _ready() -> void:
 func render_lb(level_name:String, entries:Array) -> void:
 	$level_name.text = '[center]' + level_name + '[/center]'
 	
+	var num_entries = 0
 	for entry in entries:
-		#var rank:String = Leaderboard.rank_string(entry.rank)
-		#var s:String = rank+" "+entry.username+" "+entry.final_time+" "+entry.date_achieved
-		#Debug.printf(s)
+		num_entries += 1
+		if num_entries > 25:
+			continue
 		new_cell(Leaderboard.rank_string(entry.rank))
-		new_cell(entry.username)
-		new_cell(entry.final_time)
+		new_cell(entry.current_name)
+		new_cell(TimeAttack.human_readable_time(entry.frame_count))
 		new_cell(entry.date_achieved)
 		
 		# TODO Zebra stripes, other styling, make it look nice. .. ..

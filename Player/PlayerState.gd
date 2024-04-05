@@ -15,12 +15,10 @@ func get_movement_dir() -> Vector3:
 	if input_dir.is_equal_approx(Vector2.ZERO):
 		return Vector3.ZERO
 	
-	var camera = get_viewport().get_camera_3d()
-	var camera_dir := Vector3(0,0,-1)
-	if camera: 
-		camera_dir = camera.global_transform.basis.z
-		camera_dir.y = 0.0
-		camera_dir = camera_dir.normalized()
+	var camera = Utils.get_camera()
+	var camera_dir = camera.global_transform.basis.z
+	camera_dir.y = 0.0
+	camera_dir = camera_dir.normalized()
 	return (camera_dir * input_dir.y) + (camera_dir.rotated(Vector3.UP, PI/2.0) * input_dir.x)
 
 func generic_calc_velocity(dir:Vector3, frames_to_converge:int) -> void:

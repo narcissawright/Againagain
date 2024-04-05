@@ -1,7 +1,7 @@
 extends Resource
 class_name Replay
 
-const RECORD_DEBUG_POSITIONS = true
+const RECORD_PLAYER_XFORM = true
 
 var index:int = 0 # where are we in the replay (frame #)
 var inputs:Array # uncompressed array of dictionaries
@@ -10,29 +10,32 @@ var inputs:Array # uncompressed array of dictionaries
 @export var rng_seed:int # from server
 @export var final_position_sync:Vector3 # final player position
 @export var frame_count:int # also size() of inputs
-@export var final_time:String # stringified version of frame count. xx:xx.xx
+#@export var final_time:String # stringified version of frame count. xx:xx.xx
 @export var level_name:String # or "scene_name" :P
 @export var unix_time_start:int # from server?
 @export var unix_time_end:int # from server
-@export var userid:int # incremental id, user 0, user 1 etc. maps to display name.
-@export var username:String # display name, not permanent
 @export var date_achieved:String # YYYY-MM-DD
+@export var userid:int # incremental id, user 0, user 1 etc. maps to display name.
+#@export var name_when_set:String # display name, not permanent
 @export var rank_when_set:int # 1 == WR when set
-@export var attempt_count:int # how many resets did the player do
-var debug_positions:Array # only used when debugging
+#@export var attempt_count:int # how many resets did the player do
+var player_xform:Array # only used when debugging
+var player_velocity:Array # only used when debugging
+var camera_orientation:Array
 
 func print_contents() -> void:
 	#Debug.printf("inputs.size() " + str(inputs.size()))
 	Debug.printf("packed_zstd.size() " + str(packed_zstd.size()))
-	Debug.printf([buffer_size, rng_seed, final_position_sync, frame_count, final_time, level_name, unix_time_start, unix_time_end, userid, username, date_achieved, rank_when_set, attempt_count])
-	#Debug.printf("debug_positions.size() " + str(debug_positions.size()))
+	Debug.printf([buffer_size, rng_seed, final_position_sync, frame_count, level_name, unix_time_start, unix_time_end, userid, date_achieved, rank_when_set])
 
 
 func record_frame(input:Dictionary) -> void: # from external call
 	var stripped_input = SInput.strip_input_data(input)
 	inputs.append(stripped_input)
-	if RECORD_DEBUG_POSITIONS:
-		debug_positions.append(Utils.get_player().global_position)
+	if RECORD_PLAYER_XFORM:
+		player_xform.append(Utils.get_player().global_transform)
+		player_velocity.append(Utils.get_player().velocity)
+		camera_orientation.append(Utils.get_camera().orientation)
 
 func compress() -> void:
 	var packed:PackedByteArray = var_to_bytes(inputs)
@@ -52,8 +55,10 @@ func get_client_to_server_replay_data() -> Dictionary:
 		"final_position_sync": final_position_sync,
 		"level_name": level_name
 	}
-	if RECORD_DEBUG_POSITIONS: 
-		dict.debug_positions = debug_positions
+	if RECORD_PLAYER_XFORM: 
+		dict.player_xform = player_xform
+		dict.player_velocity = player_velocity
+		dict.camera_orientation = camera_orientation
 	return dict
 	
 func prepare_download() -> Dictionary:
@@ -63,15 +68,15 @@ func prepare_download() -> Dictionary:
 		'rng_seed': rng_seed,
 		'final_position_sync': final_position_sync,
 		'frame_count': frame_count,
-		'final_time': final_time,
+		#'final_time': final_time,
 		'level_name': level_name,
 		'unix_time_start': unix_time_start,
 		'unix_time_end': unix_time_end,
 		'userid': userid,
-		'username': username,
+		#'name_when_set': name_when_set,
 		'date_achieved': date_achieved,
 		'rank_when_set': rank_when_set,
-		'attempt_count': attempt_count
+		#'attempt_count': attempt_count
 	}
 	return dict
 
@@ -83,8 +88,10 @@ func reconstruct_from_server_side(data:Dictionary) -> void:
 	buffer_size = data.buffer_size
 	final_position_sync = data.final_position_sync
 	level_name = data.level_name
-	if RECORD_DEBUG_POSITIONS:
-		debug_positions = data.debug_positions
+	if RECORD_PLAYER_XFORM:
+		player_xform = data.player_xform
+		player_velocity = data.player_velocity
+		camera_orientation = data.camera_orientation
 	decompress()
 	frame_count = inputs.size()
 

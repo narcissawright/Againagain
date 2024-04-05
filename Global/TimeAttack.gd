@@ -7,6 +7,9 @@ var validation_queue:Array
 
 signal replay_syncd(r:Replay)
 signal replay_failed(r:Replay)
+signal finished_replay_validation()
+
+var replay_desync_reported = false # Debugger for linux server
 
 func _ready() -> void:
 	set_physics_process(false)
@@ -14,6 +17,7 @@ func _ready() -> void:
 	SceneManager.new_scene.connect(check_new_scene)
 
 func check_new_scene(scene_name:String) -> void:
+	#Debug.printf("check_new_scene " + scene_name + ", SInput mode " + str(SInput.current_mode))
 	if levels.has(scene_name):
 		if SInput.current_mode == SInput.Mode.LIVE_INPUT:
 			Events.player_reached_goal.connect(goal)
@@ -26,14 +30,28 @@ func _physics_process(_delta:float) -> void:
 	
 	match SInput.current_mode:
 		SInput.Mode.LIVE_INPUT:
-			record_frame()
+			r.record_frame(SInput.this_frame)
 		SInput.Mode.FROM_REPLAY:
-			if Replay.RECORD_DEBUG_POSITIONS:
-				# Debug sync check; player position every frame
-				var replay_pos = r.debug_positions[r.index]
-				var current_pos = Utils.get_player().global_position
-				if not replay_pos.is_equal_approx(current_pos):
-					Debug.printf("F:" + str(r.index) + " R" + str(replay_pos) + " != C" + str(current_pos))
+			if Replay.RECORD_PLAYER_XFORM and not replay_desync_reported:
+				# Debug sync check; player position (and more) every frame
+				var replay_xform:Transform3D = r.player_xform[r.index]
+				var replay_velocity:Vector3 = r.player_velocity[r.index]
+				var replay_camera_o:Vector3 = r.camera_orientation[r.index]
+				var current_xform:Transform3D = Utils.get_player().global_transform
+				var current_velocity:Vector3 = Utils.get_player().velocity
+				var current_camera_o:Vector3 = Utils.get_camera().orientation
+				if not replay_xform.is_equal_approx(current_xform):
+					Debug.printf("F:" + str(r.index) + " R" + str(replay_xform) + " != C" + str(current_xform))
+					assert(false)
+					#replay_desync_reported = true 
+				if not replay_velocity.is_equal_approx(current_velocity):
+					Debug.printf("F:" + str(r.index) + " RV" + str(replay_velocity) + " != CV" + str(current_velocity))
+					assert(false)
+					#replay_desync_reported = true 
+				if not replay_camera_o.is_equal_approx(current_camera_o):
+					Debug.printf("F:" + str(r.index) + " RCO" + str(replay_camera_o) + " != CCO" + str(current_camera_o))
+					assert(false)
+					#replay_desync_reported = true 
 	
 	r.index += 1
 	if SInput.current_mode == SInput.Mode.FROM_REPLAY:
@@ -42,36 +60,24 @@ func _physics_process(_delta:float) -> void:
 	
 	Debug.write("frame_count: " + str(r.index))
 	Debug.write("timer: " + human_readable_time(r.index))
+	UI.update_timer(human_readable_time(r.index))
 
-func record_frame() -> void: 
-	r.record_frame(SInput.this_frame)
-
-func end_of_replay() -> void:
-	set_physics_process(false)
-	SInput.change_mode(SInput.Mode.NO_INPUT)
-	Debug.printf("End of Replay.")
-	Debug.printf(human_readable_time(r.index) + " - " + str(r.index) + " Frames")
-	
-	if Utils.get_player().global_position.is_equal_approx(r.final_position_sync):
-		Debug.printf("Replay Sync'd!")
-		emit_signal('replay_syncd', r.duplicate())
-	else:
-		emit_signal('replay_failed', r.duplicate())
-	
-	validation_queue.erase(r)
-	if not validation_queue.is_empty():
-		validate_next()
+# Goal reached (live input)
 
 func goal() -> void:
 	set_physics_process(false)
 	Events.player_reached_goal.disconnect(goal)
 	Debug.printf(human_readable_time(r.index) + " - " + str(r.index) + " Frames")
+	UI.update_timer(human_readable_time(r.index))
 	SInput.change_mode(SInput.Mode.NO_INPUT)
 	r.final_position_sync = Utils.get_player().global_position
 	r.compress()
 	var replay_data:Dictionary = r.get_client_to_server_replay_data()
 	Debug.printf("Sending replay to server...")
 	Network.here_is_a_replay(replay_data)
+	SceneManager.change_scene('MainMenu') # note lb doesnt update when the confirm happens, cringe.
+
+# REPLAYS
 
 # from Server.gd
 func add_replay_to_validation_queue(passed_replay:Replay) -> void:
@@ -80,7 +86,7 @@ func add_replay_to_validation_queue(passed_replay:Replay) -> void:
 		validate_next()
 	
 func validate_next() -> void:
-	assert(not validation_queue.is_empty())
+	# The queue system is tested and works!
 	SInput.change_mode(SInput.Mode.NO_INPUT)
 	r = validation_queue[0]
 	r.index = 0
@@ -91,6 +97,26 @@ func start_replay(_scene:String) -> void:
 	SceneManager.new_scene.disconnect(start_replay)
 	SInput.change_mode(SInput.Mode.FROM_REPLAY)
 	set_physics_process(true)
+
+func end_of_replay() -> void:
+	set_physics_process(false)
+	SInput.change_mode(SInput.Mode.NO_INPUT)
+	#Debug.printf("End of Replay.")
+	replay_desync_reported = false
+	#Debug.printf(human_readable_time(r.index) + " - " + str(r.index) + " Frames")
+	
+	if Utils.get_player().global_position.is_equal_approx(r.final_position_sync):
+		Debug.printf("Replay Sync'd!")
+		emit_signal('replay_syncd', r.duplicate())
+	else:
+		Debug.printf("REPLAY FAILED!")
+		emit_signal('replay_failed', r.duplicate())
+	
+	validation_queue.erase(r)
+	if not validation_queue.is_empty():
+		validate_next()
+	else:
+		emit_signal('finished_replay_validation')
 
 func human_readable_time(frames:int) -> String:
 	@warning_ignore("integer_division")

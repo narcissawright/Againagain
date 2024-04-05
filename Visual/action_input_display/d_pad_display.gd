@@ -4,8 +4,8 @@ extends Node2D
 	#for sprite in get_children():
 		#if Input.is_action_pressed(sprite.name):
 			#if Input.is_action_just_pressed(sprite.name):
-				#sprite.modulate = Palette.c('white')
+				#sprite.modulate = owner.c('white')
 			#else:
-				#sprite.modulate = Palette.c('blue_energy')
+				#sprite.modulate = owner.c('blue_energy')
 		#else:
-			#sprite.modulate = Palette.c('disabled_grey')
+			#sprite.modulate = owner.c('disabled_grey')

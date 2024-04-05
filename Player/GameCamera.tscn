@@ -1,10 +1,31 @@
-[gd_scene load_steps=2 format=3 uid="uid://de53gyx3ik2jl"]
+[gd_scene load_steps=5 format=3 uid="uid://de53gyx3ik2jl"]
 
-[ext_resource type="Script" path="res://Player/GameCamera.gd" id="1_iuy3x"]
+[ext_resource type="Script" path="res://Player/GameCamera2.gd" id="1_lepgv"]
+[ext_resource type="Shader" path="res://Visual/HQPostProcessOutline.gdshader" id="2_6gl5j"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vc44s"]
+render_priority = 0
+shader = ExtResource("2_6gl5j")
+shader_parameter/outlineColor = Color(0, 0, 0, 0.501961)
+shader_parameter/depth_threshold = 0.025
+shader_parameter/normal_threshold = 0.5
+shader_parameter/normal_smoothing = 0.25
+shader_parameter/max_thickness = 1.0
+shader_parameter/min_thickness = 0.5
+shader_parameter/max_distance = 75.0
+shader_parameter/min_distance = 2.0
+shader_parameter/grazing_fresnel_power = 5.0
+shader_parameter/grazing_angle_mask_power = 1.0
+shader_parameter/grazing_angle_modulation_factor = 50.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_tghnw"]
+material = SubResource("ShaderMaterial_vc44s")
+flip_faces = true
+size = Vector2(2, 2)
 
 [node name="GameCamera" type="Camera3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 4)
-script = ExtResource("1_iuy3x")
+script = ExtResource("1_lepgv")
 
 [node name="Debug1" type="ColorRect" parent="."]
 offset_right = 4.0
@@ -13,3 +34,7 @@ offset_bottom = 4.0
 [node name="Debug2" type="ColorRect" parent="."]
 offset_right = 4.0
 offset_bottom = 4.0
+
+[node name="PostProcessOutlines" type="MeshInstance3D" parent="."]
+extra_cull_margin = 16384.0
+mesh = SubResource("QuadMesh_tghnw")

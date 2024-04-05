@@ -17,7 +17,7 @@ func scene_exists(scene_name:String) -> bool:
 	return ResourceLoader.exists(scene_path)
 
 func _ready() -> void:
-	$FadeLayer.modulate.a = 0.0
+	UI.get_node('FadeLayer').modulate.a = 0.0
 	Utils.set_priority(self, 'scenemanager')
 	
 func insta_change_scene(scene_name:String) -> void:
@@ -27,7 +27,11 @@ func insta_change_scene(scene_name:String) -> void:
 	get_tree().change_scene_to_file(get_scene_path(scene_name))
 	changing = false
 
-
+func free_current_scene() -> void:
+	var current_scene = get_tree().get_current_scene()
+	if current_scene:
+		current_scene.queue_free()
+		#await current_scene.tree_exited
 
 func is_valid_scene_change(scene_name:String) -> bool:
 	if changing: 
@@ -44,10 +48,12 @@ func change_scene(scene_name:String) -> void:
 	
 	changing = true
 	emit_signal("changing_scene", scene_name)
+	#UI.get_node('SceneNameLabel').text = scene_name
 	var scene_path = get_scene_path(scene_name)
 	ResourceLoader.load_threaded_request(scene_path)
-	$AnimationPlayer.play('fade_out')
-	await $AnimationPlayer.animation_finished
+	await UI.fade_out()
+	#UI.get_node('AnimationPlayer').play('fade_out')
+	#await UI.get_node('AnimationPlayer').animation_finished
 	
 	var current_scene = get_tree().get_current_scene()
 	if current_scene:
@@ -64,10 +70,14 @@ func change_scene(scene_name:String) -> void:
 	
 	emit_signal("new_scene", scene_name)
 	
-	$AnimationPlayer.play('fade_in')
-	await $AnimationPlayer.animation_finished
+	#UI.get_node('AnimationPlayer').play('fade_in')
+	#await UI.get_node('AnimationPlayer').animation_finished
+	await UI.fade_in()
+	
 	emit_signal("scene_fade_finished")
 	changing = false
+	UI.animate_scene_name(scene_name)
+	#UI.get_node('AnimationPlayer').play('scene_name_fade_in_out')
 
 func reload_current_scene() -> void:
 	change_scene(get_current_scene_name())

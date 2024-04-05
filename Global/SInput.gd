@@ -1,7 +1,7 @@
 extends Node
 
 enum Mode {NO_INPUT, LIVE_INPUT, FROM_REPLAY}
-var current_mode = Mode.NO_INPUT
+var current_mode = Mode.LIVE_INPUT
 
 var device_id:int = 0 # hardcoded at zero for the time being
 var action_list:Array[StringName] # list of input actions
@@ -31,7 +31,7 @@ func clear_buffer_queue() -> void:
 		buffer_queue[action] = 0
 
 func _ready() -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	#Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	Utils.set_priority(self, "input")
 
 func change_mode(new_mode:Mode) -> void:
@@ -39,7 +39,7 @@ func change_mode(new_mode:Mode) -> void:
 	clear_this_frame()
 	clear_buffer_queue()
 	current_mode = new_mode
-	$action_input_display.visible = (current_mode != Mode.NO_INPUT)
+	UI.set_input_display_visibility(current_mode != Mode.NO_INPUT)
 
 func _physics_process(_delta:float) -> void:
 	if Input.is_action_just_pressed("ui_cancel"):
@@ -81,6 +81,7 @@ func clean_stick(dir:Vector2) -> Vector2:
 	var new_length:float = inverse_lerp(deadzone, maxzone, raw_length)
 	new_length = clamp(new_length, 0.0, 1.0)
 	# minimum length of 0, maximum length of 1.
+
 	return dir.normalized() * new_length
 
 func live_input() -> void:
